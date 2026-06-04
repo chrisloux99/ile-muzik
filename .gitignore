@@ -1,0 +1,18 @@
+node_modules
+dist
+*.local
+.env
+.env.*
+
+# Navidrome server
+navidrome/
+*.db
+*.db-shm
+*.db-wal
+
+# Cache
+cache/
+
+# Build artifacts
+vite.log
+vite.config.ts.timestamp-*.mjs
