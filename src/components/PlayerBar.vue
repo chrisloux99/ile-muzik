@@ -141,9 +141,29 @@ function handleReplayGain() {
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(10,10,10,0.92);
+  background: rgba(10,10,10,0.98);
   border-top: 1px solid var(--border);
-  backdrop-filter: blur(24px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--zambia-green) 0px,
+      var(--zambia-green) 6px,
+      var(--zambia-orange) 6px,
+      var(--zambia-orange) 12px,
+      var(--zambia-red) 12px,
+      var(--zambia-red) 18px,
+      transparent 18px,
+      transparent 24px
+    );
+    opacity: 0.4;
+  }
 
   &__progress {
     position: absolute;

@@ -29,7 +29,7 @@ onMounted(() => {
       float a=atan(uv.y,uv.x);
       float l=length(uv);
       float v=0.0;
-      for(float i=1.0;i<6.0;i++){
+      for(float i=1.0;i<4.0;i++){
         float s=i*.4+t*.15;
         v+=sin(a*i*3.0+s)*.5/(l*i*1.2);
         v+=cos(l*i*4.0-s*2.0)*.3/(i*.8);
@@ -76,23 +76,29 @@ onMounted(() => {
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
+  let needsResize = true
+
   function resize() {
     const dpr = Math.min(window.devicePixelRatio, 2)
     canvas!.width = canvas!.clientWidth * dpr
     canvas!.height = canvas!.clientHeight * dpr
     gl!.viewport(0, 0, canvas!.width, canvas!.height)
+    needsResize = true
   }
 
   function draw(now: number) {
-    resize()
+    if (needsResize) {
+      gl!.uniform2f(rLoc, canvas!.width, canvas!.height)
+      needsResize = false
+    }
     gl!.clearColor(0, 0, 0, 0)
     gl!.clear(gl!.COLOR_BUFFER_BIT)
     gl!.uniform1f(tLoc, now * 0.001)
-    gl!.uniform2f(rLoc, canvas!.width, canvas!.height)
     gl!.drawArrays(gl!.TRIANGLE_STRIP, 0, 4)
     animId = requestAnimationFrame(draw)
   }
 
+  resize()
   animId = requestAnimationFrame(draw)
   window.addEventListener('resize', resize)
 })

@@ -118,7 +118,7 @@ function randomString(length = 16): string {
 export class SubsonicAPI {
   private server = ''
   private displayName = ''
-  private clientName = 'iLeMuziQ'
+  private clientName = 'iL3-MuziK'
 
   constructor() {
     this.server = getServerUrl()

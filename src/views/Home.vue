@@ -1,9 +1,33 @@
 <template>
   <div class="home">
     <section class="hero">
+      <div class="hero__instruments">
+        <svg class="hero__kalimba" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="40" cy="90" rx="30" ry="25" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.12"/>
+          <rect x="35" y="10" width="2" height="70" rx="1" fill="currentColor" opacity="0.1"/>
+          <rect x="30" y="18" width="2" height="62" rx="1" fill="currentColor" opacity="0.08"/>
+          <rect x="40" y="14" width="2" height="66" rx="1" fill="currentColor" opacity="0.1"/>
+          <rect x="25" y="24" width="2" height="56" rx="1" fill="currentColor" opacity="0.06"/>
+          <rect x="45" y="20" width="2" height="60" rx="1" fill="currentColor" opacity="0.08"/>
+        </svg>
+        <svg class="hero__silimba" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="20" width="80" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.1"/>
+          <rect x="15" y="10" width="3" height="40" rx="1.5" fill="currentColor" opacity="0.1"/>
+          <rect x="22" y="12" width="3" height="38" rx="1.5" fill="currentColor" opacity="0.09"/>
+          <rect x="29" y="8" width="3" height="42" rx="1.5" fill="currentColor" opacity="0.1"/>
+          <rect x="36" y="14" width="3" height="36" rx="1.5" fill="currentColor" opacity="0.08"/>
+          <rect x="43" y="10" width="3" height="40" rx="1.5" fill="currentColor" opacity="0.1"/>
+          <rect x="50" y="12" width="3" height="38" rx="1.5" fill="currentColor" opacity="0.09"/>
+          <rect x="57" y="8" width="3" height="42" rx="1.5" fill="currentColor" opacity="0.1"/>
+          <rect x="64" y="14" width="3" height="36" rx="1.5" fill="currentColor" opacity="0.08"/>
+          <rect x="71" y="10" width="3" height="40" rx="1.5" fill="currentColor" opacity="0.1"/>
+          <rect x="78" y="12" width="3" height="38" rx="1.5" fill="currentColor" opacity="0.09"/>
+        </svg>
+      </div>
+
       <div class="hero__content">
         <Logo3D size="lg" />
-        <p class="hero__subtitle">Welcome to the Sound of Zambia</p>
+        <p class="hero__subtitle">The Sound of Zambia</p>
         <Btn3D variant="orange" size="lg" @click="playRandom">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           Play Random Mix
@@ -12,7 +36,10 @@
     </section>
 
     <section class="section" v-if="genres.length">
-      <h2 class="section__title">Genres</h2>
+      <div class="section__header-row">
+        <h2 class="section__title">Genres</h2>
+        <div class="section__pattern"></div>
+      </div>
       <div class="genres">
         <button
           v-for="g in genres"
@@ -27,7 +54,10 @@
     </section>
 
     <section class="section" v-if="recentAlbums.length">
-      <h2 class="section__title">Recently Played</h2>
+      <div class="section__header-row">
+        <h2 class="section__title">Recently Played</h2>
+        <div class="section__pattern"></div>
+      </div>
       <div class="album-scroll">
         <div
           v-for="a in recentAlbums"
@@ -50,7 +80,10 @@
     </section>
 
     <section class="section" v-if="newAlbums.length">
-      <h2 class="section__title">Recently Added</h2>
+      <div class="section__header-row">
+        <h2 class="section__title">Recently Added</h2>
+        <div class="section__pattern"></div>
+      </div>
       <div class="album-scroll">
         <div
           v-for="a in newAlbums"
@@ -141,30 +174,86 @@ onMounted(load)
 .hero {
   padding: 40px 0 48px;
   text-align: center;
+  position: relative;
+
+  &__instruments {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  &__kalimba {
+    position: absolute;
+    width: 100px;
+    height: 150px;
+    top: 10%;
+    left: 5%;
+    color: var(--zambia-green);
+    animation: floatInstrument 6s ease-in-out infinite;
+  }
+
+  &__silimba {
+    position: absolute;
+    width: 140px;
+    height: 80px;
+    top: 20%;
+    right: 3%;
+    color: var(--zambia-orange);
+    animation: floatInstrument 7s ease-in-out infinite 1.5s;
+  }
 
   &__content {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 16px;
+    position: relative;
+    z-index: 1;
   }
 
   &__subtitle {
     font-size: 1rem;
     color: var(--text-secondary);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     margin-bottom: 8px;
+    font-style: italic;
   }
 }
 
 .section {
   margin-bottom: 40px;
 
+  &__header-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
   &__title {
     font-size: 1.3rem;
     font-weight: 700;
-    margin-bottom: 18px;
     font-family: 'Playfair Display', serif;
+    white-space: nowrap;
+  }
+
+  &__pattern {
+    flex: 1;
+    height: 2px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--zambia-green) 0px,
+      var(--zambia-green) 6px,
+      var(--zambia-orange) 6px,
+      var(--zambia-orange) 12px,
+      var(--zambia-red) 12px,
+      var(--zambia-red) 18px,
+      transparent 18px,
+      transparent 24px
+    );
+    opacity: 0.35;
+    border-radius: 1px;
   }
 }
 
@@ -194,11 +283,24 @@ onMounted(load)
     transition: opacity 0.2s;
   }
 
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--zambia-green), var(--zambia-orange), var(--zambia-red));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
   &:hover {
     border-color: rgba(25,138,0,0.3);
     transform: translateY(-2px);
 
     &::before { opacity: 1; }
+    &::after { opacity: 0.5; }
   }
 
   &__name {
@@ -302,4 +404,9 @@ onMounted(load)
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes floatInstrument {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
 </style>

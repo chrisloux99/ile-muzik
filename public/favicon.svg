@@ -1,6 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
-  <text x="4" y="24" font-family="Arial Black, sans-serif" font-weight="900" font-size="20">
-    <tspan fill="#198A00">iL</tspan><tspan fill="#EF7D00">3</tspan>
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1aff00"/>
+      <stop offset="50%" stop-color="#EF7D00"/>
+      <stop offset="100%" stop-color="#DE2010"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="none" stroke="url(#g)" stroke-width="2" opacity="0.6"/>
+  <text x="32" y="44" text-anchor="middle" font-family="serif" font-weight="900" font-size="30" fill="url(#g)">i3K</text>
 </svg>

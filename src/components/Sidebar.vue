@@ -100,7 +100,6 @@ async function handleLogout() {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    backdrop-filter: blur(12px);
 
     @media (max-width: 768px) {
       display: flex;
@@ -111,9 +110,8 @@ async function handleLogout() {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.7);
     z-index: 98;
-    backdrop-filter: blur(2px);
 
     @media (max-width: 768px) {
       .sidebar--open & { display: block; }
@@ -126,13 +124,33 @@ async function handleLogout() {
     left: 0;
     width: 260px;
     height: 100vh;
-    background: rgba(10,10,10,0.95);
+    background: rgba(10,10,10,0.98);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     z-index: 99;
-    backdrop-filter: blur(20px);
     transition: transform 0.3s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--zambia-green) 0px,
+        var(--zambia-green) 8px,
+        var(--zambia-orange) 8px,
+        var(--zambia-orange) 16px,
+        var(--zambia-red) 16px,
+        var(--zambia-red) 24px,
+        transparent 24px,
+        transparent 32px
+      );
+      opacity: 0.5;
+    }
 
     @media (max-width: 768px) {
       transform: translateX(-100%);
@@ -143,6 +161,19 @@ async function handleLogout() {
   &__header {
     padding: 28px 24px 20px;
     border-bottom: 1px solid var(--border);
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 24px;
+      right: 24px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--zambia-green), var(--zambia-orange), var(--zambia-red));
+      opacity: 0.4;
+      border-radius: 1px;
+    }
   }
 
   &__nav {

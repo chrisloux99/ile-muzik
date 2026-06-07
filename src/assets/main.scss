@@ -4,6 +4,10 @@
   --zambia-orange: #EF7D00;
   --zambia-orange-light: #ff9500;
   --zambia-red: #DE2010;
+  --zambia-black: #1a1a1a;
+  --zambia-earth: #8B4513;
+  --zambia-gold: #DAA520;
+  --zambia-copper: #B87333;
   --bg-dark: #0a0a0a;
   --bg-card: #111111;
   --bg-surface: #161616;
@@ -14,6 +18,7 @@
   --accent: var(--zambia-green);
   --accent-hover: var(--zambia-green-light);
   --border: rgba(255,255,255,0.06);
+  --border-cultural: rgba(239,125,0,0.15);
   --radius: 12px;
   --radius-sm: 8px;
   --radius-lg: 16px;
@@ -75,6 +80,38 @@ img {
   will-change: transform;
 }
 
+.chitenge-border {
+  position: relative;
+}
+
+.chitenge-border::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--zambia-green) 0px,
+    var(--zambia-green) 8px,
+    var(--zambia-orange) 8px,
+    var(--zambia-orange) 16px,
+    var(--zambia-red) 16px,
+    var(--zambia-red) 24px,
+    var(--zambia-black) 24px,
+    var(--zambia-black) 32px
+  );
+}
+
+.instrument-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -88,4 +125,9 @@ img {
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(26,255,0,0.3)); }
+  50% { filter: drop-shadow(0 0 16px rgba(239,125,0,0.4)); }
 }
