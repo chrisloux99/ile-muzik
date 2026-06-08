@@ -1,6 +1,6 @@
-// Subsonic API client
 import type { Track, Album, Artist, Genre, Playlist, SearchResult, PlayQueue } from './types'
-import { getServerUrl, getAdminUser, getAdminPass } from './config'
+import type { User, AuthResponse, TokenPackage, SubscriptionStatus, StreamRecord, CanPlayResult, Transaction } from './types'
+import { getApiBase, getNavidromeUrl, getNavidromeUser, getNavidromePass } from './config'
 
 function toQueryString(params: Record<string, any>): string {
   return Object.entries(params)
@@ -106,87 +106,156 @@ function md5(string: string): string {
   return hex(md51(string))
 }
 
-function randomString(length = 16): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
-}
-
-export class SubsonicAPI {
-  private server = ''
-  private displayName = ''
-  private clientName = 'iL3-MuziK'
+export class ILeAPI {
+  private token: string | null = null
+  private displayName: string | null = null
 
   constructor() {
-    this.server = getServerUrl()
-    this.displayName = localStorage.getItem('displayName') || ''
+    this.token = localStorage.getItem('ile_token')
+    this.displayName = localStorage.getItem('ile_displayName')
   }
 
-  private get urlParams(): string {
-    return toQueryString({
-      u: getAdminUser(),
-      p: getAdminPass()
+  private get authHeaders(): Record<string, string> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`
+    return headers
+  }
+
+  private async backendFetch(path: string, options: RequestInit = {}): Promise<any> {
+    const url = `${getApiBase()}${path}`
+    const response = await fetch(url, {
+      ...options,
+      headers: { ...this.authHeaders, ...options.headers as Record<string, string> },
     })
-  }
 
-  private async fetch(path: string, params: Record<string, any> = {}): Promise<any> {
-    const allParams = { ...params, v: '1.16.1', f: 'json', c: this.clientName }
-    const url = `${this.server}/rest/${path}?${toQueryString(allParams)}&${this.urlParams}`
-
-    const response = await window.fetch(url)
-    if (!response.ok) throw new Error(`Request failed: ${response.status}`)
-
-    const json = await response.json()
-    const res = json['subsonic-response']
-
-    if (res.status !== 'ok') {
-      throw new Error(res.error?.message || 'Unknown error')
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Request failed' }))
+      throw new Error(error.error || `HTTP ${response.status}`)
     }
 
-    return res
+    return response.json()
   }
 
-  async login(email: string, password: string): Promise<void> {
-    if (!email || !password) {
-      throw new Error('Please enter email and password')
-    }
-
-    // Try to verify server, but don't block login if unreachable
-    try {
-      const url = `${this.server}/rest/ping?${this.urlParams}&v=1.16.1&c=${this.clientName}&f=json`
-      await fetch(url, { signal: AbortSignal.timeout(2000) })
-    } catch {}
-
-    this.displayName = email.split('@')[0]
-    this.saveSession()
+  // ---- Auth ----
+  async register(email: string, password: string, displayName: string): Promise<AuthResponse> {
+    const result = await this.backendFetch('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, displayName }),
+    })
+    this.setSession(result.token, result.user.displayName)
+    return result
   }
 
-  private saveSession() {
-    localStorage.setItem('displayName', this.displayName)
+  async login(email: string, password: string): Promise<AuthResponse> {
+    const result = await this.backendFetch('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    })
+    this.setSession(result.token, result.user.displayName)
+    return result
+  }
+
+  private setSession(token: string, displayName: string) {
+    this.token = token
+    this.displayName = displayName
+    localStorage.setItem('ile_token', token)
+    localStorage.setItem('ile_displayName', displayName)
   }
 
   logout() {
-    localStorage.removeItem('displayName')
-    this.displayName = ''
+    this.token = null
+    this.displayName = null
+    localStorage.removeItem('ile_token')
+    localStorage.removeItem('ile_displayName')
   }
 
   isAuthenticated(): boolean {
-    return !!this.displayName
+    return !!this.token
   }
 
   getDisplayName(): string {
-    return this.displayName
+    return this.displayName || ''
+  }
+
+  async getProfile(): Promise<User & { tokenBalance: string }> {
+    return this.backendFetch('/auth/profile')
+  }
+
+  // ---- Payments ----
+  async getTokenPackages(): Promise<TokenPackage[]> {
+    return this.backendFetch('/payments/packages')
+  }
+
+  async purchaseTokens(packageIndex: number): Promise<any> {
+    return this.backendFetch('/payments/purchase', {
+      method: 'POST',
+      body: JSON.stringify({ packageIndex }),
+    })
+  }
+
+  async getPurchaseHistory(): Promise<Transaction[]> {
+    return this.backendFetch('/payments/history')
+  }
+
+  // ---- Subscriptions ----
+  async getSubscriptionStatus(): Promise<SubscriptionStatus> {
+    return this.backendFetch('/subscriptions/status')
+  }
+
+  async subscribe(tier: string): Promise<any> {
+    return this.backendFetch('/subscriptions/subscribe', {
+      method: 'POST',
+      body: JSON.stringify({ tier }),
+    })
+  }
+
+  async cancelSubscription(): Promise<any> {
+    return this.backendFetch('/subscriptions/cancel', { method: 'POST' })
+  }
+
+  // ---- Streams ----
+  async recordStream(trackId: string, trackName?: string, artistName?: string): Promise<StreamRecord> {
+    return this.backendFetch('/streams/record', {
+      method: 'POST',
+      body: JSON.stringify({ trackId, trackName, artistName }),
+    })
+  }
+
+  async canPlay(): Promise<CanPlayResult> {
+    return this.backendFetch('/streams/can-play')
+  }
+
+  async getStreamStats(): Promise<any> {
+    return this.backendFetch('/streams/stats')
+  }
+
+  // ---- Subsonic (music data) ----
+  private get subsonicParams(): string {
+    return toQueryString({
+      u: getNavidromeUser(),
+      p: getNavidromePass(),
+      v: '1.16.1',
+      f: 'json',
+      c: 'iLe-Play',
+    })
+  }
+
+  private async subsonicFetch(path: string, params: Record<string, any> = {}): Promise<any> {
+    const url = `${getNavidromeUrl()}/rest/${path}?${toQueryString(params)}&${this.subsonicParams}`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`Subsonic request failed: ${response.status}`)
+    const json = await response.json()
+    const res = json['subsonic-response']
+    if (res.status !== 'ok') throw new Error(res.error?.message || 'Unknown error')
+    return res
   }
 
   getStreamUrl(id: string): string {
-    return `${this.server}/rest/stream?id=${id}&v=1.16.1&${this.urlParams}&c=${this.clientName}`
+    return `${getNavidromeUrl()}/rest/stream?id=${id}&v=1.16.1&${this.subsonicParams}`
   }
 
   getCoverArtUrl(id: string): string {
-    return `${this.server}/rest/getCoverArt?id=${id}&v=1.16.1&${this.urlParams}&c=${this.clientName}&size=300`
+    return `${getNavidromeUrl()}/rest/getCoverArt?id=${id}&v=1.16.1&${this.subsonicParams}&size=300`
   }
 
   private normalizeTrack(item: any): Track {
@@ -239,7 +308,7 @@ export class SubsonicAPI {
   }
 
   async getGenres(): Promise<Genre[]> {
-    const res = await this.fetch('getGenres')
+    const res = await this.subsonicFetch('getGenres')
     return (res.genres?.genre || []).map((item: any) => ({
       id: item.value,
       name: item.value,
@@ -249,20 +318,20 @@ export class SubsonicAPI {
   }
 
   async getAlbums(type: string, size = 20, offset = 0): Promise<Album[]> {
-    const res = await this.fetch('getAlbumList2', { type, size, offset })
+    const res = await this.subsonicFetch('getAlbumList2', { type, size, offset })
     return (res.albumList2?.album || []).map((a: any) => this.normalizeAlbum(a))
   }
 
   async getAlbumDetails(id: string): Promise<Album> {
     const [album, info] = await Promise.all([
-      this.fetch('getAlbum', { id }),
-      this.fetch('getAlbumInfo2', { id })
+      this.subsonicFetch('getAlbum', { id }),
+      this.subsonicFetch('getAlbumInfo2', { id })
     ])
     return this.normalizeAlbum({ ...album.album, ...info.albumInfo })
   }
 
   async getArtists(): Promise<Artist[]> {
-    const res = await this.fetch('getArtists')
+    const res = await this.subsonicFetch('getArtists')
     return (res.artists?.index || [])
       .flatMap((index: any) => index.artist)
       .map((a: any) => this.normalizeArtist(a))
@@ -270,24 +339,24 @@ export class SubsonicAPI {
 
   async getArtistDetails(id: string): Promise<Artist> {
     const [artist, info] = await Promise.all([
-      this.fetch('getArtist', { id }),
-      this.fetch('getArtistInfo2', { id })
+      this.subsonicFetch('getArtist', { id }),
+      this.subsonicFetch('getArtistInfo2', { id })
     ])
     return this.normalizeArtist({ ...info.artistInfo2, ...artist.artist })
   }
 
   async getAlbumsByGenre(genre: string, size = 20, offset = 0): Promise<Album[]> {
-    const res = await this.fetch('getAlbumList2', { type: 'byGenre', genre, size, offset })
+    const res = await this.subsonicFetch('getAlbumList2', { type: 'byGenre', genre, size, offset })
     return (res.albumList2?.album || []).map((a: any) => this.normalizeAlbum(a))
   }
 
   async getRandomTracks(params: { size?: number; genre?: string } = {}): Promise<Track[]> {
-    const res = await this.fetch('getRandomSongs', { size: params.size || 100, genre: params.genre })
+    const res = await this.subsonicFetch('getRandomSongs', { size: params.size || 100, genre: params.genre })
     return (res.randomSongs?.song || []).map((s: any) => this.normalizeTrack(s))
   }
 
   async getFavourites(): Promise<{ albums: Album[]; artists: Artist[]; tracks: Track[] }> {
-    const res = await this.fetch('getStarred2')
+    const res = await this.subsonicFetch('getStarred2')
     return {
       albums: (res.starred2?.album || []).map((a: any) => this.normalizeAlbum(a)),
       artists: (res.starred2?.artist || []).map((a: any) => this.normalizeArtist(a)),
@@ -296,7 +365,7 @@ export class SubsonicAPI {
   }
 
   async search(query: string): Promise<SearchResult> {
-    const res = await this.fetch('search3', {
+    const res = await this.subsonicFetch('search3', {
       query,
       albumCount: 20,
       artistCount: 20,
@@ -310,7 +379,7 @@ export class SubsonicAPI {
   }
 
   async getPlaylists(): Promise<Playlist[]> {
-    const res = await this.fetch('getPlaylists')
+    const res = await this.subsonicFetch('getPlaylists')
     return (res.playlists?.playlist || []).map((p: any) => ({
       id: p.id,
       name: p.name || '(Unnamed)',
@@ -322,7 +391,7 @@ export class SubsonicAPI {
   }
 
   async getPlaylist(id: string): Promise<Playlist> {
-    const res = await this.fetch('getPlaylist', { id })
+    const res = await this.subsonicFetch('getPlaylist', { id })
     const p = res.playlist
     return {
       id: p.id,
@@ -336,11 +405,11 @@ export class SubsonicAPI {
   }
 
   async scrobble(id: string): Promise<void> {
-    await this.fetch('scrobble', { id, submission: true })
+    await this.subsonicFetch('scrobble', { id, submission: true })
   }
 
   async getPlayQueue(): Promise<PlayQueue> {
-    const res = await this.fetch('getPlayQueue')
+    const res = await this.subsonicFetch('getPlayQueue')
     const tracks = (res.playQueue?.entry || []).map((s: any) => this.normalizeTrack(s))
     const currentId = res.playQueue?.current?.toString()
     const index = tracks.findIndex((t: Track) => t.id === currentId)
@@ -352,7 +421,7 @@ export class SubsonicAPI {
   }
 
   async savePlayQueue(tracks: Track[], currentTrack: Track | null, currentTime: number): Promise<void> {
-    await this.fetch('savePlayQueue', {
+    await this.subsonicFetch('savePlayQueue', {
       id: tracks.map(t => t.id),
       current: currentTrack?.id,
       position: Math.round(currentTime * 1000)
@@ -364,7 +433,7 @@ export class SubsonicAPI {
     if (type === 'track') params.id = id
     if (type === 'album') params.albumId = id
     if (type === 'artist') params.artistId = id
-    await this.fetch('star', params)
+    await this.subsonicFetch('star', params)
   }
 
   async removeFavourite(id: string, type: 'track' | 'album' | 'artist'): Promise<void> {
@@ -372,8 +441,8 @@ export class SubsonicAPI {
     if (type === 'track') params.id = id
     if (type === 'album') params.albumId = id
     if (type === 'artist') params.artistId = id
-    await this.fetch('unstar', params)
+    await this.subsonicFetch('unstar', params)
   }
 }
 
-export const api = new SubsonicAPI()
+export const api = new ILeAPI()

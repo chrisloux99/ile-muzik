@@ -141,8 +141,8 @@ function handleReplayGain() {
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(10,10,10,0.98);
-  border-top: 1px solid var(--border);
+  background: rgba(10, 10, 26, 0.98);
+  border-top: 1px solid var(--glass-border);
 
   &::before {
     content: '';
@@ -151,18 +151,8 @@ function handleReplayGain() {
     left: 0;
     right: 0;
     height: 2px;
-    background: repeating-linear-gradient(
-      90deg,
-      var(--zambia-green) 0px,
-      var(--zambia-green) 6px,
-      var(--zambia-orange) 6px,
-      var(--zambia-orange) 12px,
-      var(--zambia-red) 12px,
-      var(--zambia-red) 18px,
-      transparent 18px,
-      transparent 24px
-    );
-    opacity: 0.4;
+    background: linear-gradient(90deg, var(--violet), var(--cyan), var(--amber));
+    opacity: 0.5;
   }
 
   &__progress {
@@ -185,7 +175,7 @@ function handleReplayGain() {
 
   &__progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--zambia-green), var(--zambia-orange));
+    background: linear-gradient(90deg, var(--violet), var(--cyan));
     border-radius: 0 2px 2px 0;
     transition: width 0.1s linear;
   }
@@ -195,14 +185,14 @@ function handleReplayGain() {
     top: 50%;
     width: 12px;
     height: 12px;
-    background: var(--zambia-orange);
+    background: var(--cyan);
     border-radius: 50%;
     transform: scale(0);
     opacity: 0;
     transition: opacity 0.15s, transform 0.15s;
     margin-left: -6px;
     margin-top: -6px;
-    box-shadow: 0 0 8px rgba(239,125,0,0.5);
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
   }
 
   &__inner {
@@ -235,7 +225,7 @@ function handleReplayGain() {
     overflow: hidden;
     flex-shrink: 0;
     position: relative;
-    background: var(--bg-surface);
+    background: var(--surface);
 
     img {
       width: 100%;
@@ -251,7 +241,7 @@ function handleReplayGain() {
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-    background: linear-gradient(135deg, rgba(25,138,0,0.1), rgba(239,125,0,0.1));
+    background: linear-gradient(135deg, rgba(120, 80, 255, 0.1), rgba(0, 229, 255, 0.1));
   }
 
   &__viz {
@@ -327,21 +317,21 @@ function handleReplayGain() {
     &--sm {
       width: 36px;
       height: 36px;
-      &.active { color: var(--zambia-green-light); }
+      &.active { color: var(--violet-bright); }
     }
 
     &--play {
       width: 52px;
       height: 52px;
-      background: linear-gradient(145deg, #22a800, #198A00);
+      background: linear-gradient(145deg, var(--violet-bright), var(--violet));
       color: #fff;
-      box-shadow: 0 2px 8px rgba(25,138,0,0.3);
+      box-shadow: 0 2px 8px rgba(120, 80, 255, 0.3);
       transition: all 0.15s ease;
 
       &:hover {
-        background: linear-gradient(145deg, #2bc400, #22a800);
+        background: linear-gradient(145deg, var(--violet-bright), var(--violet));
         transform: scale(1.05);
-        box-shadow: 0 4px 16px rgba(25,138,0,0.4);
+        box-shadow: 0 4px 16px rgba(120, 80, 255, 0.4);
       }
 
       &:active { transform: scale(0.95); }
@@ -392,7 +382,7 @@ function handleReplayGain() {
       appearance: none;
       width: 12px;
       height: 12px;
-      background: var(--zambia-green);
+      background: var(--violet);
       border-radius: 50%;
       cursor: pointer;
     }

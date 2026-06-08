@@ -33,11 +33,35 @@ const router = createRouter({
       name: 'queue',
       component: () => import('@/views/Queue.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/wallet',
+      name: 'wallet',
+      component: () => import('@/views/Wallet.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/subscriptions',
+      name: 'subscriptions',
+      component: () => import('@/views/Subscriptions.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/payment/success',
+      name: 'payment-success',
+      component: () => import('@/views/PaymentSuccess.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/payment/cancel',
+      name: 'payment-cancel',
+      component: () => import('@/views/PaymentCancel.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const isAuthenticated = api.isAuthenticated()
 
   if (to.meta.requiresAuth && !isAuthenticated) {

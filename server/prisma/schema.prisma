@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  displayName       String
+  role              String    @default("USER")
+  stellarPublicKey  String?   @unique
+  encryptedSecret   String?
+  tier              String    @default("FREE")
+  subscriptionExpiry DateTime?
+  streamsThisMonth  Int       @default(0)
+  streamResetDate   DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  transactions  Transaction[]
+  streams       Stream[]
+  subscriptions Subscription[]
+
+  @@index([email])
+  @@index([stellarPublicKey])
+}
+
+model Transaction {
+  id          String    @id @default(cuid())
+  userId      String
+  type        String
+  amount      Float     @default(0)
+  tokenAmount Float     @default(0)
+  currency    String    @default("USD")
+  txHash      String?
+  stripeId    String?
+  status      String    @default("PENDING")
+  metadata    String?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([txHash])
+  @@index([stripeId])
+}
+
+model Stream {
+  id         String   @id @default(cuid())
+  userId     String
+  trackId    String
+  trackName  String?
+  artistName String?
+  tokenCost  Float    @default(0.01)
+  txHash     String?
+  duration   Int      @default(0)
+  playedAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([trackId])
+  @@index([playedAt])
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  userId        String
+  tier          String
+  startDate     DateTime @default(now())
+  endDate       DateTime
+  paymentTxHash String?
+  autoRenew     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([endDate])
+}
+
+model TokenConfig {
+  id              String   @id @default(cuid())
+  assetCode       String   @default("ILE")
+  issuerPublicKey String
+  ratePerStream   Float    @default(0.01)
+  usdPerToken     Float    @default(0.001)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

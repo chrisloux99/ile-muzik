@@ -1,0 +1,3 @@
+[Auth] Register error: Email already registered
+[Stellar] Trustline failed: getServer is not defined
+[Auth] Stellar setup deferred: getServer is not defined

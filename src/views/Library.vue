@@ -142,7 +142,7 @@ onMounted(() => {
 .library {
   position: relative;
   z-index: 1;
-  padding: 32px 24px 40px;
+  padding: 0 28px 40px;
 
   &__header {
     display: flex;
@@ -151,6 +151,7 @@ onMounted(() => {
     flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 24px;
+    padding-top: 40px;
   }
 
   &__title {
@@ -179,8 +180,8 @@ onMounted(() => {
     transition: all 0.2s ease;
 
     &--active {
-      background: rgba(25,138,0,0.2);
-      color: var(--zambia-green-light);
+      background: rgba(120, 80, 255, 0.15);
+      color: var(--violet-bright);
     }
 
     &:hover:not(&--active) {
@@ -298,7 +299,7 @@ onMounted(() => {
     border-radius: 50%;
     overflow: hidden;
     margin: 0 auto 10px;
-    background: linear-gradient(135deg, rgba(25,138,0,0.15), rgba(239,125,0,0.1));
+    background: linear-gradient(135deg, rgba(120, 80, 255, 0.15), rgba(0, 229, 255, 0.1));
     position: relative;
 
     img {
@@ -343,8 +344,8 @@ onMounted(() => {
   &__spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid rgba(25,138,0,0.2);
-    border-top-color: var(--zambia-green);
+    border: 3px solid rgba(120, 80, 255, 0.2);
+    border-top-color: var(--violet);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }

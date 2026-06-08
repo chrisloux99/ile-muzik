@@ -1,10 +1,10 @@
 <template>
-  <div class="app" :class="{ 'app--sidebar-open': sidebarOpen && isLoggedIn }">
-    <VortexBackground />
-    <Sidebar v-if="isLoggedIn" />
-    <main class="main smooth-scroll" :class="{ 'main--with-player': isLoggedIn }">
+  <div class="ile-app" :class="{ 'ile-app--nav-open': navOpen && isLoggedIn }">
+    <CosmosBackground />
+    <OrbNav v-if="isLoggedIn" />
+    <main class="ile-main" :class="{ 'ile-main--with-player': isLoggedIn }">
       <RouterView v-slot="{ Component }">
-        <transition name="page" mode="out-in">
+        <transition name="morph" mode="out-in">
           <component :is="Component" />
         </transition>
       </RouterView>
@@ -17,54 +17,51 @@
 import { RouterView } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '@/stores/app'
-import VortexBackground from '@/components/VortexBackground.vue'
-import Sidebar from '@/components/Sidebar.vue'
+import CosmosBackground from '@/components/CosmosBackground.vue'
+import OrbNav from '@/components/OrbNav.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
 
-const { isLoggedIn, sidebarOpen } = storeToRefs(useAppStore())
+const { isLoggedIn, navOpen } = storeToRefs(useAppStore())
 </script>
 
 <style lang="scss">
 @import '@/assets/main.scss';
 
-.app {
+.ile-app {
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
 }
 
-.main {
+.ile-main {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-left: 260px;
-  transition: padding-left 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
   &--with-player {
-    padding-bottom: 90px;
-  }
-
-  @media (max-width: 768px) {
-    padding-left: 0;
+    padding-bottom: 100px;
   }
 }
 
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+.morph-enter-active {
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
+.morph-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-.page-leave-to {
+.morph-enter-from {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: scale(0.96) translateY(12px);
+  filter: blur(4px);
+}
+.morph-leave-to {
+  opacity: 0;
+  transform: scale(1.02) translateY(-8px);
+  filter: blur(2px);
 }
 </style>

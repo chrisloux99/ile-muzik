@@ -1,129 +1,129 @@
 <template>
   <div class="home">
     <section class="hero">
-      <div class="hero__instruments">
-        <svg class="hero__kalimba" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="40" cy="90" rx="30" ry="25" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.12"/>
-          <rect x="35" y="10" width="2" height="70" rx="1" fill="currentColor" opacity="0.1"/>
-          <rect x="30" y="18" width="2" height="62" rx="1" fill="currentColor" opacity="0.08"/>
-          <rect x="40" y="14" width="2" height="66" rx="1" fill="currentColor" opacity="0.1"/>
-          <rect x="25" y="24" width="2" height="56" rx="1" fill="currentColor" opacity="0.06"/>
-          <rect x="45" y="20" width="2" height="60" rx="1" fill="currentColor" opacity="0.08"/>
-        </svg>
-        <svg class="hero__silimba" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="10" y="20" width="80" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.1"/>
-          <rect x="15" y="10" width="3" height="40" rx="1.5" fill="currentColor" opacity="0.1"/>
-          <rect x="22" y="12" width="3" height="38" rx="1.5" fill="currentColor" opacity="0.09"/>
-          <rect x="29" y="8" width="3" height="42" rx="1.5" fill="currentColor" opacity="0.1"/>
-          <rect x="36" y="14" width="3" height="36" rx="1.5" fill="currentColor" opacity="0.08"/>
-          <rect x="43" y="10" width="3" height="40" rx="1.5" fill="currentColor" opacity="0.1"/>
-          <rect x="50" y="12" width="3" height="38" rx="1.5" fill="currentColor" opacity="0.09"/>
-          <rect x="57" y="8" width="3" height="42" rx="1.5" fill="currentColor" opacity="0.1"/>
-          <rect x="64" y="14" width="3" height="36" rx="1.5" fill="currentColor" opacity="0.08"/>
-          <rect x="71" y="10" width="3" height="40" rx="1.5" fill="currentColor" opacity="0.1"/>
-          <rect x="78" y="12" width="3" height="38" rx="1.5" fill="currentColor" opacity="0.09"/>
-        </svg>
+      <div class="hero__content">
+        <div class="hero__greeting">
+          <span class="hero__wave">Hello</span>
+          <span class="hero__name">{{ userName }}</span>
+        </div>
+        <h1 class="hero__title">
+          <span class="gradient-text">Discover</span> your sound
+        </h1>
+        <p class="hero__sub">
+          <span class="hero__token-badge">
+            <span class="hero__token-dot"></span>
+            {{ tokenBalance.toFixed(2) }} iLe
+          </span>
+          <span class="hero__divider">|</span>
+          <span>{{ streamsThisMonth }}/{{ streamLimit === -1 ? '∞' : streamLimit }} streams</span>
+        </p>
       </div>
 
-      <div class="hero__content">
-        <Logo3D size="lg" />
-        <p class="hero__subtitle">The Sound of Zambia</p>
-        <Btn3D variant="orange" size="lg" @click="playRandom">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          Play Random Mix
-        </Btn3D>
-      </div>
+      <button class="hero__play-btn" @click="playRandom">
+        <div class="hero__play-ring"></div>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+      </button>
     </section>
 
     <section class="section" v-if="genres.length">
-      <div class="section__header-row">
+      <div class="section__header">
         <h2 class="section__title">Genres</h2>
-        <div class="section__pattern"></div>
+        <div class="section__line"></div>
       </div>
-      <div class="genres">
+      <div class="genre-grid">
         <button
-          v-for="g in genres"
+          v-for="(g, i) in genres"
           :key="g.name"
-          class="genre-card"
+          class="genre-chip"
+          :style="{ '--delay': i * 0.04 + 's' }"
           @click="playGenre(g.name)"
         >
-          <span class="genre-card__name">{{ g.name }}</span>
-          <span class="genre-card__count">{{ g.albumCount }} albums</span>
+          <span class="genre-chip__name">{{ g.name }}</span>
+          <span class="genre-chip__count">{{ g.albumCount }}</span>
         </button>
       </div>
     </section>
 
     <section class="section" v-if="recentAlbums.length">
-      <div class="section__header-row">
+      <div class="section__header">
         <h2 class="section__title">Recently Played</h2>
-        <div class="section__pattern"></div>
+        <div class="section__line"></div>
       </div>
-      <div class="album-scroll">
+      <div class="album-row">
         <div
           v-for="a in recentAlbums"
           :key="a.id"
-          class="album-card"
+          class="album-tile"
           @click="playAlbum(a)"
         >
-          <div class="album-card__art">
+          <div class="album-tile__art">
             <img :src="a.image" :alt="a.name" loading="lazy" />
-            <div class="album-card__overlay">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            <div class="album-tile__play">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
             </div>
           </div>
-          <div class="album-card__info">
-            <div class="album-card__name">{{ a.name }}</div>
-            <div class="album-card__artist">{{ a.artists?.[0]?.name }}</div>
+          <div class="album-tile__meta">
+            <span class="album-tile__name">{{ a.name }}</span>
+            <span class="album-tile__artist">{{ a.artists?.[0]?.name }}</span>
           </div>
         </div>
       </div>
     </section>
 
     <section class="section" v-if="newAlbums.length">
-      <div class="section__header-row">
-        <h2 class="section__title">Recently Added</h2>
-        <div class="section__pattern"></div>
+      <div class="section__header">
+        <h2 class="section__title">Fresh Drops</h2>
+        <div class="section__line"></div>
       </div>
-      <div class="album-scroll">
+      <div class="album-row">
         <div
           v-for="a in newAlbums"
           :key="a.id"
-          class="album-card"
+          class="album-tile"
           @click="playAlbum(a)"
         >
-          <div class="album-card__art">
+          <div class="album-tile__art">
             <img :src="a.image" :alt="a.name" loading="lazy" />
-            <div class="album-card__overlay">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            <div class="album-tile__play">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
             </div>
           </div>
-          <div class="album-card__info">
-            <div class="album-card__name">{{ a.name }}</div>
-            <div class="album-card__artist">{{ a.artists?.[0]?.name }}</div>
+          <div class="album-tile__meta">
+            <span class="album-tile__name">{{ a.name }}</span>
+            <span class="album-tile__artist">{{ a.artists?.[0]?.name }}</span>
           </div>
         </div>
       </div>
     </section>
 
-    <div v-if="loading" class="loading">
-      <div class="loading__spinner"></div>
+    <div v-if="loading" class="loader">
+      <div class="loader__orb"></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { Album, Genre } from '@/api/types'
 import { api } from '@/api/client'
+import { useAppStore } from '@/stores/app'
 import { usePlayerStore } from '@/stores/player'
-import Logo3D from '@/components/Logo3D.vue'
-import Btn3D from '@/components/Btn3D.vue'
 
+const appStore = useAppStore()
 const player = usePlayerStore()
 const genres = ref<Genre[]>([])
 const recentAlbums = ref<Album[]>([])
 const newAlbums = ref<Album[]>([])
 const loading = ref(true)
+
+const userName = computed(() => appStore.user?.displayName || appStore.getDisplayName?.() || 'there')
+const tokenBalance = computed(() => appStore.tokenBalance)
+const streamsThisMonth = computed(() => appStore.user?.streamsThisMonth || 0)
+const streamLimit = computed(() => {
+  const tier = appStore.user?.tier || 'FREE'
+  const limits: Record<string, number> = { FREE: 20, BASIC: 200, PREMIUM: -1 }
+  return limits[tier] ?? 20
+})
 
 async function load() {
   try {
@@ -135,6 +135,7 @@ async function load() {
     genres.value = g
     recentAlbums.value = recent
     newAlbums.value = fresh
+    await appStore.refreshProfile()
   } catch (e) {
     console.error('[Home]', e)
   } finally {
@@ -168,210 +169,236 @@ onMounted(load)
 .home {
   position: relative;
   z-index: 1;
-  padding: 0 24px 40px;
+  padding: 0 28px 40px;
 }
 
 .hero {
-  padding: 40px 0 48px;
-  text-align: center;
-  position: relative;
-
-  &__instruments {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  &__kalimba {
-    position: absolute;
-    width: 100px;
-    height: 150px;
-    top: 10%;
-    left: 5%;
-    color: var(--zambia-green);
-    animation: floatInstrument 6s ease-in-out infinite;
-  }
-
-  &__silimba {
-    position: absolute;
-    width: 140px;
-    height: 80px;
-    top: 20%;
-    right: 3%;
-    color: var(--zambia-orange);
-    animation: floatInstrument 7s ease-in-out infinite 1.5s;
-  }
+  padding: 48px 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 
   &__content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    position: relative;
-    z-index: 1;
+    flex: 1;
   }
 
-  &__subtitle {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    letter-spacing: 0.08em;
+  &__greeting {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 8px;
-    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  &__wave {
+    animation: float 2s ease-in-out infinite;
+    display: inline-block;
+  }
+
+  &__name {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 12px;
+
+    @media (max-width: 768px) {
+      font-size: 1.6rem;
+    }
+  }
+
+  &__sub {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+
+  &__token-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  &__token-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  &__divider {
+    color: var(--text-muted);
+  }
+
+  &__play-btn {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+
+    &:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 40px rgba(120, 80, 255, 0.4);
+    }
+
+    &:active { transform: scale(0.95); }
+  }
+
+  &__play-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid rgba(120, 80, 255, 0.2);
+    animation: breathe 3s ease-in-out infinite;
   }
 }
 
 .section {
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 
-  &__header-row {
+  &__header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 18px;
+    gap: 14px;
+    margin-bottom: 16px;
   }
 
   &__title {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    font-family: 'Playfair Display', serif;
     white-space: nowrap;
+    font-family: var(--font-display);
   }
 
-  &__pattern {
+  &__line {
     flex: 1;
-    height: 2px;
-    background: repeating-linear-gradient(
-      90deg,
-      var(--zambia-green) 0px,
-      var(--zambia-green) 6px,
-      var(--zambia-orange) 6px,
-      var(--zambia-orange) 12px,
-      var(--zambia-red) 12px,
-      var(--zambia-red) 18px,
-      transparent 18px,
-      transparent 24px
-    );
-    opacity: 0.35;
-    border-radius: 1px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(120, 80, 255, 0.2), transparent);
   }
 }
 
-.genres {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
+.genre-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.genre-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
+.genre-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(25,138,0,0.06), rgba(239,125,0,0.04));
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--zambia-green), var(--zambia-orange), var(--zambia-red));
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
+  transition: all var(--transition-smooth);
+  animation: slideUp 0.4s ease both;
+  animation-delay: var(--delay);
 
   &:hover {
-    border-color: rgba(25,138,0,0.3);
+    color: var(--text-primary);
+    border-color: rgba(120, 80, 255, 0.3);
+    background: rgba(120, 80, 255, 0.08);
     transform: translateY(-2px);
-
-    &::before { opacity: 1; }
-    &::after { opacity: 0.5; }
-  }
-
-  &__name {
-    display: block;
-    font-size: 0.88rem;
-    font-weight: 600;
-    position: relative;
   }
 
   &__count {
-    display: block;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    margin-top: 4px;
-    position: relative;
+    font-family: var(--font-mono);
   }
 }
 
-.album-scroll {
+.album-row {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   overflow-x: auto;
   padding-bottom: 8px;
   scroll-snap-type: x mandatory;
 
-  &::-webkit-scrollbar { height: 4px; }
+  &::-webkit-scrollbar { height: 3px; }
 }
 
-.album-card {
-  flex: 0 0 160px;
+.album-tile {
+  flex: 0 0 170px;
   scroll-snap-align: start;
   cursor: pointer;
 
   &__art {
-    width: 160px;
-    height: 160px;
+    width: 170px;
+    height: 170px;
     border-radius: var(--radius);
     overflow: hidden;
     position: relative;
-    background: var(--bg-surface);
+    background: var(--surface);
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s ease;
+      transition: transform 0.4s ease;
     }
   }
 
-  &__overlay {
+  &__play {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(5, 5, 16, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: all var(--transition-smooth);
+
+    svg {
+      transform: scale(0.8);
+      transition: transform var(--transition-spring);
+    }
   }
 
   &:hover {
-    .album-card__art img { transform: scale(1.05); }
-    .album-card__overlay { opacity: 1; }
+    .album-tile__art img { transform: scale(1.08); }
+    .album-tile__play {
+      opacity: 1;
+      svg { transform: scale(1); }
+    }
   }
 
-  &__info {
-    padding: 8px 2px 0;
+  &__meta {
+    padding: 10px 2px 0;
   }
 
   &__name {
-    font-size: 0.82rem;
+    display: block;
+    font-size: 0.85rem;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -379,6 +406,7 @@ onMounted(load)
   }
 
   &__artist {
+    display: block;
     font-size: 0.72rem;
     color: var(--text-secondary);
     white-space: nowrap;
@@ -388,25 +416,18 @@ onMounted(load)
   }
 }
 
-.loading {
+.loader {
   display: flex;
   justify-content: center;
-  padding: 60px 0;
+  padding: 80px 0;
 
-  &__spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid rgba(25,138,0,0.2);
-    border-top-color: var(--zambia-green);
+  &__orb {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    animation: breathe 1.5s ease-in-out infinite;
+    box-shadow: 0 0 40px rgba(120, 80, 255, 0.3);
   }
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-@keyframes floatInstrument {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(2deg); }
 }
 </style>

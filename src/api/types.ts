@@ -1,4 +1,67 @@
-// Subsonic API types
+export interface User {
+  id: string
+  email: string
+  displayName: string
+  role: 'USER' | 'ADMIN'
+  tier: 'FREE' | 'BASIC' | 'PREMIUM'
+  stellarPublicKey: string | null
+  tokenBalance?: string
+  streamsThisMonth: number
+  subscriptionExpiry: string | null
+  createdAt: string
+}
+
+export interface AuthResponse {
+  user: User
+  token: string
+}
+
+export interface TokenPackage {
+  tokens: number
+  priceUSD: number
+  label: string
+}
+
+export interface SubscriptionStatus {
+  tier: string
+  subscriptionExpiry: string | null
+  streamsThisMonth: number
+  streamLimit: number
+  activeSubscription: any | null
+  availableTiers: {
+    tier: string
+    priceUSD: number
+    streamLimit: number
+    label: string
+  }[]
+}
+
+export interface StreamRecord {
+  streamId: string
+  tokenCost: number
+  streamsThisMonth: number
+  streamLimit: number
+}
+
+export interface CanPlayResult {
+  canPlay: boolean
+  reason?: string
+  streamsThisMonth: number
+  streamLimit: number
+  tier: string
+}
+
+export interface Transaction {
+  id: string
+  type: string
+  amount: string
+  tokenAmount: string
+  currency: string
+  txHash: string | null
+  status: string
+  createdAt: string
+}
+
 export interface Track {
   id: string
   title: string

@@ -35,7 +35,7 @@
       <section v-if="(activeFilter === 'all' || activeFilter === 'tracks') && results.tracks.length" class="section">
         <div class="section__header">
           <h2 class="section__title">Tracks</h2>
-          <Btn3D variant="ghost" size="sm" @click="playAllTracks">Play All</Btn3D>
+          <BtnGhost size="sm" @click="playAllTracks">Play All</BtnGhost>
         </div>
         <div class="track-list">
           <div
@@ -95,13 +95,8 @@
     </div>
 
     <div v-else-if="!query" class="empty">
-      <svg width="56" height="56" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="40" cy="90" rx="30" ry="25" fill="none" stroke="var(--zambia-green)" stroke-width="1.5" opacity="0.2"/>
-        <rect x="35" y="10" width="2" height="70" rx="1" fill="var(--zambia-green)" opacity="0.2"/>
-        <rect x="30" y="18" width="2" height="62" rx="1" fill="var(--zambia-orange)" opacity="0.15"/>
-        <rect x="40" y="14" width="2" height="66" rx="1" fill="var(--zambia-green)" opacity="0.2"/>
-        <rect x="25" y="24" width="2" height="56" rx="1" fill="var(--zambia-red)" opacity="0.1"/>
-        <rect x="45" y="20" width="2" height="60" rx="1" fill="var(--zambia-orange)" opacity="0.15"/>
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="1.5" opacity="0.3">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <p>Search your music library</p>
     </div>
@@ -113,7 +108,7 @@ import { ref, computed, watch } from 'vue'
 import type { Album, Artist, Track, SearchResult } from '@/api/types'
 import { api } from '@/api/client'
 import { usePlayerStore } from '@/stores/player'
-import Btn3D from '@/components/Btn3D.vue'
+import BtnGhost from '@/components/BtnGhost.vue'
 
 const player = usePlayerStore()
 const query = ref('')
@@ -190,12 +185,13 @@ async function playArtist(artist: Artist) {
 .search {
   position: relative;
   z-index: 1;
-  padding: 32px 24px 40px;
+  padding: 0 28px 40px;
 
-  &__bar {
+    &__bar {
     position: relative;
     max-width: 560px;
     margin-bottom: 24px;
+    padding-top: 40px;
   }
 
   &__icon {
@@ -220,8 +216,8 @@ async function playArtist(artist: Artist) {
 
     &::placeholder { color: var(--text-muted); }
     &:focus {
-      border-color: rgba(25,138,0,0.4);
-      box-shadow: 0 0 0 3px rgba(25,138,0,0.1);
+      border-color: rgba(120, 80, 255, 0.4);
+      box-shadow: 0 0 0 3px rgba(120, 80, 255, 0.1);
     }
   }
 
@@ -259,9 +255,9 @@ async function playArtist(artist: Artist) {
     gap: 6px;
 
     &--active {
-      background: rgba(25,138,0,0.15);
-      border-color: rgba(25,138,0,0.3);
-      color: var(--zambia-green-light);
+      background: rgba(120, 80, 255, 0.15);
+      border-color: rgba(120, 80, 255, 0.3);
+      color: var(--violet-bright);
     }
 
     &:hover:not(&--active) {
@@ -323,7 +319,7 @@ async function playArtist(artist: Artist) {
     border-radius: 6px;
     overflow: hidden;
     flex-shrink: 0;
-    background: var(--bg-surface);
+    background: var(--surface);
 
     img { width: 100%; height: 100%; object-fit: cover; }
   }
@@ -369,7 +365,7 @@ async function playArtist(artist: Artist) {
     border-radius: var(--radius);
     overflow: hidden;
     position: relative;
-    background: var(--bg-surface);
+    background: var(--surface);
 
     img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
   }
@@ -423,7 +419,7 @@ async function playArtist(artist: Artist) {
     border-radius: 50%;
     overflow: hidden;
     margin: 0 auto 8px;
-    background: linear-gradient(135deg, rgba(25,138,0,0.15), rgba(239,125,0,0.1));
+    background: linear-gradient(135deg, rgba(120, 80, 255, 0.15), rgba(0, 229, 255, 0.1));
 
     img { width: 100%; height: 100%; object-fit: cover; }
   }
@@ -467,8 +463,8 @@ async function playArtist(artist: Artist) {
   &__spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid rgba(25,138,0,0.2);
-    border-top-color: var(--zambia-green);
+    border: 3px solid rgba(120, 80, 255, 0.2);
+    border-top-color: var(--violet);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }

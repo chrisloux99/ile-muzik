@@ -5,7 +5,7 @@
         <h1 class="queue__title">Queue</h1>
         <p class="queue__count" v-if="queue.length">{{ queue.length }} tracks</p>
       </div>
-      <Btn3D v-if="queue.length" variant="ghost" size="sm" @click="clearQueue">Clear Queue</Btn3D>
+      <BtnGhost v-if="queue.length" @click="clearQueue">Clear Queue</BtnGhost>
     </div>
 
     <div v-if="!queue.length" class="empty">
@@ -64,7 +64,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { usePlayerStore } from '@/stores/player'
-import Btn3D from '@/components/Btn3D.vue'
 
 const player = usePlayerStore()
 const { queue, queueIndex, isPlaying } = storeToRefs(player)
@@ -94,13 +93,14 @@ function clearQueue() {
 .queue {
   position: relative;
   z-index: 1;
-  padding: 32px 24px 40px;
+  padding: 0 28px 40px;
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 24px;
+    padding-top: 40px;
   }
 
   &__title {
@@ -137,10 +137,10 @@ function clearQueue() {
   }
 
   &--active {
-    background: rgba(25,138,0,0.08);
+    background: rgba(120, 80, 255, 0.08);
 
-    .queue-item__title { color: var(--zambia-green-light); }
-    .queue-item__num { color: var(--zambia-green-light); }
+    .queue-item__title { color: var(--violet-bright); }
+    .queue-item__num { color: var(--violet-bright); }
   }
 
   &__indicator {
@@ -159,7 +159,7 @@ function clearQueue() {
 
   &__bar {
     width: 3px;
-    background: var(--zambia-green);
+    background: var(--violet);
     border-radius: 1px;
     animation: barPulse 0.5s ease-in-out infinite alternate;
 
@@ -176,7 +176,7 @@ function clearQueue() {
     border-radius: 8px;
     overflow: hidden;
     flex-shrink: 0;
-    background: var(--bg-surface);
+    background: var(--surface);
 
     img { width: 100%; height: 100%; object-fit: cover; }
   }
@@ -188,7 +188,7 @@ function clearQueue() {
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-    background: linear-gradient(135deg, rgba(25,138,0,0.1), rgba(239,125,0,0.1));
+    background: linear-gradient(135deg, rgba(120, 80, 255, 0.1), rgba(0, 229, 255, 0.1));
   }
 
   &__info {
@@ -232,8 +232,8 @@ function clearQueue() {
     flex-shrink: 0;
 
     &:hover {
-      color: var(--zambia-red);
-      background: rgba(222,32,16,0.1);
+      color: var(--magenta);
+      background: rgba(255, 64, 129, 0.1);
     }
   }
 }

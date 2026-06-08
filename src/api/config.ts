@@ -1,19 +1,20 @@
-const DEFAULT_SERVER = 'http://localhost:4533'
-const ADMIN_USER = 'ilemusiq'
-const ADMIN_PASS = 'iledecoin'
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
+const NAVIDROME_URL = import.meta.env.VITE_NAVIDROME_URL || 'http://localhost:4533'
+const NAVIDROME_USER = import.meta.env.VITE_NAVIDROME_USER || 'ilemusiq'
+const NAVIDROME_PASS = import.meta.env.VITE_NAVIDROME_PASS || 'iledecoin'
 
-export function getServerUrl(): string {
-  return DEFAULT_SERVER
+export function getApiBase(): string {
+  return API_BASE
 }
 
-export function getAdminUser(): string {
-  return ADMIN_USER
+export function getNavidromeUrl(): string {
+  return NAVIDROME_URL
 }
 
-export function getAdminPass(): string {
-  return ADMIN_PASS
+export function getNavidromeUser(): string {
+  return NAVIDROME_USER
 }
 
-export function isServerConfigured(): boolean {
-  return true
+export function getNavidromePass(): string {
+  return NAVIDROME_PASS
 }
