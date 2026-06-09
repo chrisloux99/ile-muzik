@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
   displayName: z.string().min(2, 'Display name must be at least 2 characters').max(50),
 })
 
@@ -14,6 +14,12 @@ export const loginSchema = z.object({
 export const purchaseSchema = z.object({
   packageIndex: z.number().int().min(0).max(3),
   paymentMethodId: z.string().optional(),
+})
+
+export const sendTokensSchema = z.object({
+  recipientAddress: z.string().regex(/^G[A-Z2-7]{55}$/, 'Invalid Stellar public key format'),
+  amount: z.number().positive('Amount must be positive').finite('Amount must be finite')
+    .max(1000000, 'Amount exceeds maximum'),
 })
 
 export const subscribeSchema = z.object({

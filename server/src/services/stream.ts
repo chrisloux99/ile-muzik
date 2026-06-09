@@ -1,6 +1,7 @@
 import { prisma } from '../config/database.js'
 import { config } from '../config/index.js'
 import { logger } from '../config/logger.js'
+import { stellarService } from './stellar.js'
 
 export class StreamService {
   async recordStream(userId: string, data: {
@@ -20,41 +21,74 @@ export class StreamService {
 
     const tokenCost = config.token.ratePerStream
 
-    // Record the stream
-    const stream = await prisma.stream.create({
-      data: {
-        userId,
-        trackId: data.trackId,
-        trackName: data.trackName,
-        artistName: data.artistName,
-        tokenCost,
-        duration: data.duration || 0,
-      },
-    })
+    // Check on-chain balance for token deduction
+    let txHash: string | null = null
+    if (user.stellarPublicKey && tokenCost > 0) {
+      const onChainBalance = await stellarService.getBalance(user.stellarPublicKey)
+      const balance = parseFloat(onChainBalance)
 
-    // Update stream count
-    await prisma.user.update({
-      where: { id: userId },
-      data: { streamsThisMonth: { increment: 1 } },
-    })
+      if (balance < tokenCost) {
+        throw new Error('Insufficient token balance. Please purchase more iLe tokens.')
+      }
 
-    // Record transaction
-    await prisma.transaction.create({
-      data: {
-        userId,
-        type: 'STREAM',
-        amount: tokenCost * config.token.usdPerToken,
-        tokenAmount: tokenCost,
-        status: 'COMPLETED',
-        metadata: JSON.stringify({ trackId: data.trackId, streamId: stream.id }),
-      },
-    })
+      // Deduct tokens on-chain: send stream cost to distributor (platform revenue)
+      try {
+        txHash = await stellarService.sendTokens(
+          stellarService.distributorPublicKey,
+          tokenCost.toFixed(7)
+        )
+      } catch (err: any) {
+        logger.error(`[Stream] Token deduction failed: ${err.message}`)
+        throw new Error('Token payment failed. Please try again.')
+      }
+
+      // Update local balance cache
+      await prisma.user.update({
+        where: { id: userId },
+        data: { tokenBalance: (balance - tokenCost).toString() },
+      })
+    }
+
+    // Record the stream atomically
+    const [stream] = await prisma.$transaction([
+      prisma.stream.create({
+        data: {
+          userId,
+          trackId: data.trackId,
+          trackName: data.trackName,
+          artistName: data.artistName,
+          tokenCost,
+          txHash,
+          duration: data.duration || 0,
+        },
+      }),
+      prisma.user.update({
+        where: { id: userId },
+        data: { streamsThisMonth: { increment: 1 } },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId,
+          type: 'STREAM',
+          amount: tokenCost * config.token.usdPerToken,
+          tokenAmount: tokenCost,
+          txHash,
+          status: 'COMPLETED',
+          metadata: JSON.stringify({
+            trackId: data.trackId,
+            trackName: data.trackName,
+            artistName: data.artistName,
+          }),
+        },
+      }),
+    ])
 
     logger.info(`[Stream] ${user.email} played ${data.trackId} (${tokenCost} iLe)`)
 
     return {
       streamId: stream.id,
       tokenCost,
+      txHash,
       streamsThisMonth: user.streamsThisMonth + 1,
       streamLimit: tierConfig.streamLimit,
     }
@@ -68,7 +102,6 @@ export class StreamService {
 
     // Check subscription expiry
     if (user.subscriptionExpiry && user.subscriptionExpiry < new Date()) {
-      // Downgrade to free
       await prisma.user.update({
         where: { id: userId },
         data: { tier: 'FREE' },
@@ -84,6 +117,24 @@ export class StreamService {
         streamsThisMonth: user.streamsThisMonth,
         streamLimit: tierConfig.streamLimit,
         tier: user.tier,
+      }
+    }
+
+    // Check token balance
+    if (user.stellarPublicKey) {
+      const onChainBalance = await stellarService.getBalance(user.stellarPublicKey)
+      const balance = parseFloat(onChainBalance)
+      const streamCost = config.token.ratePerStream
+
+      if (balance < streamCost) {
+        return {
+          canPlay: false,
+          reason: 'Insufficient token balance',
+          streamsThisMonth: user.streamsThisMonth,
+          streamLimit: tierConfig.streamLimit,
+          tier: user.tier,
+          tokenBalance: onChainBalance,
+        }
       }
     }
 

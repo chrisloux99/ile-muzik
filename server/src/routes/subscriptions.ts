@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { subscriptionService } from '../services/subscription.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { validate, subscribeSchema } from '../utils/validation.js'
 
 const router = Router()
 
@@ -15,7 +16,8 @@ router.get('/status', authMiddleware, async (req, res, next) => {
 
 router.post('/subscribe', authMiddleware, async (req, res, next) => {
   try {
-    const result = await subscriptionService.subscribe(req.user!.userId, req.body.tier)
+    const { tier } = validate(subscribeSchema, req.body)
+    const result = await subscriptionService.subscribe(req.user!.userId, tier)
     res.json(result)
   } catch (err) {
     next(err)

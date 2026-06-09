@@ -3,16 +3,47 @@ services:
     name: ile-play-api
     runtime: node
     region: oregon
-    buildCommand: cd server && npm install && npx prisma generate && npx prisma db push
-    startCommand: cd server && npx tsx src/index.ts
+    buildCommand: cd server && npm install && npx prisma generate && npx prisma migrate deploy && npm run build
+    startCommand: cd server && node dist/index.js
     envVars:
       - key: DATABASE_URL
-        value: file:./dev.db
+        sync: false
       - key: JWT_SECRET
         generateValue: true
+        minLength: 32
+      - key: ENCRYPTION_KEY
+        generateValue: true
+        minLength: 32
       - key: STELLAR_NETWORK
         value: testnet
       - key: CORS_ORIGIN
         sync: false
       - key: NODE_ENV
         value: production
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STELLAR_ISSUER_SECRET
+        sync: false
+      - key: STELLAR_DISTRIBUTOR_SECRET
+        sync: false
+      - key: NAVIDROME_URL
+        sync: false
+      - key: NAVIDROME_ADMIN_USER
+        sync: false
+      - key: NAVIDROME_ADMIN_PASS
+        sync: false
+
+  - type: web
+    name: ile-play-frontend
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_NAVIDROME_URL
+        sync: false

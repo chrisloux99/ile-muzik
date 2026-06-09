@@ -1,12 +1,14 @@
 import { Router } from 'express'
 import { streamService } from '../services/stream.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { validate, streamRecordSchema } from '../utils/validation.js'
 
 const router = Router()
 
 router.post('/record', authMiddleware, async (req, res, next) => {
   try {
-    const result = await streamService.recordStream(req.user!.userId, req.body)
+    const data = validate(streamRecordSchema, req.body)
+    const result = await streamService.recordStream(req.user!.userId, data)
     res.json(result)
   } catch (err: any) {
     if (err.message.includes('limit reached')) {

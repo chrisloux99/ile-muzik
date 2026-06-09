@@ -1,4 +1,5 @@
 import { config } from '../config/index.js'
+import { logger } from '../config/logger.js'
 
 let StellarSdk: any = null
 
@@ -7,7 +8,10 @@ async function loadSdk() {
     try {
       StellarSdk = await import('stellar-sdk')
     } catch {
-      console.warn('[Stellar] stellar-sdk not installed - wallet features disabled')
+      if (config.isProduction) {
+        throw new Error('stellar-sdk is required in production')
+      }
+      logger.warn('[Stellar] stellar-sdk not installed - wallet features disabled')
     }
   }
   return StellarSdk
@@ -54,7 +58,10 @@ export class StellarService {
 
   async generateKeypair() {
     const sdk = await loadSdk()
-    if (!sdk) return { publicKey: 'MOCK_' + Date.now(), secret: 'MOCK_SECRET_' + Date.now() }
+    if (!sdk) {
+      if (config.isProduction) throw new Error('Stellar SDK not available')
+      return { publicKey: 'MOCK_' + Date.now(), secret: 'MOCK_SECRET_' + Date.now() }
+    }
     const keypair = sdk.Keypair.random()
     return {
       publicKey: keypair.publicKey(),
@@ -65,7 +72,10 @@ export class StellarService {
   async createAccount(publicKey: string): Promise<string> {
     await this.init()
     const sdk = await loadSdk()
-    if (!sdk) return publicKey
+    if (!sdk) {
+      if (config.isProduction) throw new Error('Stellar SDK not available')
+      return publicKey
+    }
 
     try {
       if (config.stellar.isTestnet) {
@@ -73,7 +83,7 @@ export class StellarService {
           `https://friendbot.stellar.org?addr=${encodeURIComponent(publicKey)}`
         )
         if (!response.ok) throw new Error('Friendbot funding failed')
-        console.log(`[Stellar] Funded account ${publicKey} via friendbot`)
+        logger.info(`[Stellar] Funded account via friendbot`)
         return publicKey
       }
 
@@ -96,10 +106,10 @@ export class StellarService {
 
       transaction.sign(this.distributorKeypair)
       await horizonServer.submitTransaction(transaction)
-      console.log(`[Stellar] Created account ${publicKey}`)
+      logger.info(`[Stellar] Created account`)
       return publicKey
     } catch (err: any) {
-      console.error('[Stellar] Create account failed:', err.message)
+      logger.error(`[Stellar] Create account failed: ${err.message}`)
       throw err
     }
   }
@@ -107,7 +117,10 @@ export class StellarService {
   async createTrustline(secret: string): Promise<string> {
     await this.init()
     const sdk = await loadSdk()
-    if (!sdk) return 'MOCK_TX'
+    if (!sdk) {
+      if (config.isProduction) throw new Error('Stellar SDK not available')
+      return 'MOCK_TX'
+    }
 
     try {
       const keypair = sdk.Keypair.fromSecret(secret)
@@ -125,10 +138,10 @@ export class StellarService {
 
       transaction.sign(keypair)
       const result = await horizonServer.submitTransaction(transaction)
-      console.log(`[Stellar] Trustline created for ${keypair.publicKey()}`)
+      logger.info(`[Stellar] Trustline created`)
       return result.hash
     } catch (err: any) {
-      console.error('[Stellar] Trustline failed:', err.message)
+      logger.error(`[Stellar] Trustline failed: ${err.message}`)
       throw err
     }
   }
@@ -136,7 +149,10 @@ export class StellarService {
   async sendTokens(destinationPublicKey: string, amount: string): Promise<string> {
     await this.init()
     const sdk = await loadSdk()
-    if (!sdk) return 'MOCK_TX_HASH'
+    if (!sdk) {
+      if (config.isProduction) throw new Error('Stellar SDK not available')
+      return 'MOCK_TX_HASH'
+    }
 
     try {
       if (!this.distributorKeypair) throw new Error('Distributor not configured')
@@ -161,10 +177,10 @@ export class StellarService {
 
       transaction.sign(this.distributorKeypair)
       const result = await horizonServer.submitTransaction(transaction)
-      console.log(`[Stellar] Sent ${amount} ${config.token.assetCode} to ${destinationPublicKey}`)
+      logger.info(`[Stellar] Sent ${amount} ${config.token.assetCode}`)
       return result.hash
     } catch (err: any) {
-      console.error('[Stellar] Send tokens failed:', err.message)
+      logger.error(`[Stellar] Send tokens failed: ${err.message}`)
       throw err
     }
   }
@@ -172,7 +188,10 @@ export class StellarService {
   async getBalance(publicKey: string): Promise<string> {
     await this.init()
     const sdk = await loadSdk()
-    if (!sdk) return '0'
+    if (!sdk) {
+      if (config.isProduction) throw new Error('Stellar SDK not available')
+      return '0'
+    }
 
     try {
       const horizonServer = new sdk.Horizon.Server(getServer())
@@ -190,7 +209,10 @@ export class StellarService {
   async getTransactionHistory(publicKey: string, limit = 20) {
     await this.init()
     const sdk = await loadSdk()
-    if (!sdk) return []
+    if (!sdk) {
+      if (config.isProduction) throw new Error('Stellar SDK not available')
+      return []
+    }
 
     try {
       const horizonServer = new sdk.Horizon.Server(getServer())

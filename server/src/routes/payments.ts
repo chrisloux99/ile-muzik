@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { paymentService } from '../services/payment.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { validate, purchaseSchema, sendTokensSchema } from '../utils/validation.js'
 import { config } from '../config/index.js'
 
 const router = Router()
@@ -11,7 +12,8 @@ router.get('/packages', (_req, res) => {
 
 router.post('/purchase', authMiddleware, async (req, res, next) => {
   try {
-    const result = await paymentService.createPurchase(req.user!.userId, req.body.packageIndex)
+    const { packageIndex } = validate(purchaseSchema, req.body)
+    const result = await paymentService.createPurchase(req.user!.userId, packageIndex)
     res.json(result)
   } catch (err) {
     next(err)
@@ -20,11 +22,8 @@ router.post('/purchase', authMiddleware, async (req, res, next) => {
 
 router.post('/send', authMiddleware, async (req, res, next) => {
   try {
-    const { recipientAddress, amount } = req.body
-    if (!recipientAddress || !amount) {
-      return res.status(400).json({ error: 'Recipient address and amount are required' })
-    }
-    const result = await paymentService.sendTokens(req.user!.userId, recipientAddress, parseFloat(amount))
+    const { recipientAddress, amount } = validate(sendTokensSchema, req.body)
+    const result = await paymentService.sendTokens(req.user!.userId, recipientAddress, amount)
     res.json(result)
   } catch (err) {
     next(err)
@@ -34,6 +33,9 @@ router.post('/send', authMiddleware, async (req, res, next) => {
 router.post('/webhook', async (req, res, next) => {
   try {
     const signature = req.headers['stripe-signature'] as string
+    if (!signature) {
+      return res.status(400).json({ error: 'Missing stripe-signature header' })
+    }
     const result = await paymentService.handleStripeWebhook(req.body, signature)
     res.json(result)
   } catch (err) {

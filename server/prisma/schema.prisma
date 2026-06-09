@@ -15,6 +15,7 @@ model User {
   role              String    @default("USER")
   stellarPublicKey  String?   @unique
   encryptedSecret   String?
+  tokenBalance      String    @default("0")
   tier              String    @default("FREE")
   subscriptionExpiry DateTime?
   streamsThisMonth  Int       @default(0)
@@ -25,6 +26,8 @@ model User {
   transactions  Transaction[]
   streams       Stream[]
   subscriptions Subscription[]
+  stakes        Stake[]
+  burns         Burn[]
 
   @@index([email])
   @@index([stellarPublicKey])
@@ -92,4 +95,49 @@ model TokenConfig {
   usdPerToken     Float    @default(0.001)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model Stake {
+  id          String    @id @default(cuid())
+  userId      String
+  amount      Float
+  startDate   DateTime  @default(now())
+  endDate     DateTime?
+  status      String    @default("ACTIVE")
+  rewardRate  Float     @default(0.05)
+  txHash      String?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Burn {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Float
+  reason    String?
+  txHash    String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Payout {
+  id          String   @id @default(cuid())
+  artistName  String
+  amount      Float
+  txHash      String?
+  period      String
+  trackCount  Int      @default(0)
+  streamCount Int      @default(0)
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+
+  @@index([artistName])
+  @@index([status])
 }

@@ -1,15 +1,16 @@
 import { Router } from 'express'
 import { authService } from '../services/auth.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { validate, registerSchema, loginSchema } from '../utils/validation.js'
 
 const router = Router()
 
 router.post('/register', async (req, res, next) => {
   try {
-    const result = await authService.register(req.body)
+    const data = validate(registerSchema, req.body)
+    const result = await authService.register(data)
     res.status(201).json(result)
   } catch (err: any) {
-    console.error('[Auth] Register error:', err.message)
     if (err.message === 'Email already registered') {
       return res.status(409).json({ error: err.message })
     }
@@ -19,7 +20,8 @@ router.post('/register', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
-    const result = await authService.login(req.body)
+    const data = validate(loginSchema, req.body)
+    const result = await authService.login(data)
     res.json(result)
   } catch (err: any) {
     if (err.message === 'Invalid email or password') {

@@ -1,100 +1,113 @@
 <template>
-  <div class="login">
-    <div class="login__orb-bg">
-      <div class="login__orb login__orb--1"></div>
-      <div class="login__orb login__orb--2"></div>
-      <div class="login__orb login__orb--3"></div>
-    </div>
+  <div class="auth">
+    <div class="auth__glow auth__glow--1"></div>
+    <div class="auth__glow auth__glow--2"></div>
 
-    <div class="login__container">
-      <div class="login__brand">
-        <div class="login__logo">
-          <div class="login__logo-ring"></div>
-          <div class="login__logo-core">
-            <span class="login__logo-letter">i</span>
-          </div>
+    <div class="auth__wrapper">
+      <div class="auth__brand">
+        <div class="auth__logo">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="22" stroke="url(#grad)" stroke-width="2.5" opacity="0.8"/>
+            <circle cx="24" cy="24" r="14" stroke="url(#grad)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4"/>
+            <circle cx="24" cy="24" r="6" fill="url(#grad)"/>
+            <defs>
+              <linearGradient id="grad" x1="0" y1="0" x2="48" y2="48">
+                <stop stop-color="#7850ff"/>
+                <stop offset="1" stop-color="#00e5ff"/>
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
-        <h1 class="login__title">
-          <span class="gradient-text">iLe</span><span class="login__dash">-</span><span>Play</span>
+        <h1 class="auth__title">
+          <span class="gradient-text">iLe</span>-Play
         </h1>
-        <p class="login__tagline">Music meets blockchain</p>
       </div>
 
-      <ui5-card class="login__card">
-        <ui5-tabcontainer @tab-select="handleTabSelect" :selected-tab="mode === 'login' ? 0 : 1">
-          <ui5-tab text="Sign In" :selected="mode === 'login'"></ui5-tab>
-          <ui5-tab text="Create Account" :selected="mode === 'register'"></ui5-tab>
-        </ui5-tabcontainer>
-
-        <form class="login__form" @submit.prevent="handleSubmit">
-          <ui5-input
-            v-if="mode === 'register'"
-            v-model="displayName"
-            placeholder="Your display name"
-            :disabled="loading"
-            class="login__input"
-            required
+      <div class="auth__card">
+        <div class="auth__tabs">
+          <button
+            class="auth__tab"
+            :class="{ 'auth__tab--active': mode === 'login' }"
+            @click="mode = 'login'"
           >
-            <ui5-label slot="label">Display Name</ui5-label>
-          </ui5-input>
-
-          <ui5-input
-            v-model="email"
-            type="Email"
-            placeholder="you@example.com"
-            :disabled="loading"
-            required
-            class="login__input"
+            Sign In
+          </button>
+          <button
+            class="auth__tab"
+            :class="{ 'auth__tab--active': mode === 'register' }"
+            @click="mode = 'register'"
           >
-            <ui5-label slot="label">Email</ui5-label>
-          </ui5-input>
+            Sign Up
+          </button>
+        </div>
 
-          <ui5-input
-            v-model="password"
-            type="Password"
-            placeholder="Your password"
-            :disabled="loading"
-            required
-            class="login__input"
-          >
-            <ui5-label slot="label">Password</ui5-label>
-          </ui5-input>
+        <form class="auth__form" @submit.prevent="handleSubmit" novalidate>
+          <div v-if="mode === 'register'" class="auth__field">
+            <label class="auth__label">Name</label>
+            <input
+              v-model="displayName"
+              type="text"
+              placeholder="Your name"
+              class="auth__input"
+              :disabled="loading"
+              autocomplete="name"
+            />
+          </div>
 
-          <ui5-message-strip
-            v-if="error"
-            design="Negative"
-            class="login__error"
-            @close="error = ''"
-          >
-            {{ error }}
-          </ui5-message-strip>
+          <div class="auth__field">
+            <label class="auth__label">Email</label>
+            <input
+              v-model="email"
+              type="email"
+              placeholder="you@example.com"
+              class="auth__input"
+              :disabled="loading"
+              autocomplete="email"
+            />
+          </div>
 
-          <ui5-button
-            type="Submit"
-            design="Emphasized"
-            :disabled="loading"
-            class="login__submit"
-          >
-            <ui5-busy-indicator v-if="loading" active size="Small"></ui5-busy-indicator>
+          <div class="auth__field">
+            <label class="auth__label">Password</label>
+            <input
+              v-model="password"
+              type="password"
+              placeholder="Min. 6 characters"
+              class="auth__input"
+              :disabled="loading"
+              autocomplete="current-password"
+            />
+          </div>
+
+          <p v-if="error" class="auth__error">{{ error }}</p>
+
+          <button type="submit" class="auth__submit" :disabled="loading">
+            <span v-if="loading" class="auth__spinner"></span>
             <span v-else>{{ mode === 'login' ? 'Sign In' : 'Create Account' }}</span>
-          </ui5-button>
+          </button>
         </form>
 
-        <div class="login__features">
-          <div class="login__feature">
-            <ui5-icon name="history" class="login__feature-icon"></ui5-icon>
-            <span>Stream music with iLe tokens</span>
-          </div>
-          <div class="login__feature">
-            <ui5-icon name="chain-link" class="login__feature-icon"></ui5-icon>
-            <span>Powered by Stellar blockchain</span>
-          </div>
-          <div class="login__feature">
-            <ui5-icon name="money-bills" class="login__feature-icon"></ui5-icon>
-            <span>Micropayments per stream</span>
-          </div>
-        </div>
-      </ui5-card>
+        <p class="auth__footer">
+          {{ mode === 'login' ? "Don't have an account?" : 'Already have an account?' }}
+          <button class="auth__link" @click="mode = mode === 'login' ? 'register' : 'login'">
+            {{ mode === 'login' ? 'Sign Up' : 'Sign In' }}
+          </button>
+        </p>
+      </div>
+
+      <div class="auth__features">
+        <span class="auth__feature">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Blockchain secured
+        </span>
+        <span class="auth__feature">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Instant streaming
+        </span>
+        <span class="auth__feature">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Micropayments
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -103,19 +116,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-
-import '@ui5/webcomponents/dist/Input.js'
-import '@ui5/webcomponents/dist/Button.js'
-import '@ui5/webcomponents/dist/Card.js'
-import '@ui5/webcomponents/dist/Tab.js'
-import '@ui5/webcomponents/dist/TabContainer.js'
-import '@ui5/webcomponents/dist/Label.js'
-import '@ui5/webcomponents/dist/MessageStrip.js'
-import '@ui5/webcomponents/dist/BusyIndicator.js'
-import '@ui5/webcomponents/dist/Icon.js'
-import '@ui5/webcomponents-icons/dist/history.js'
-import '@ui5/webcomponents-icons/dist/chain-link.js'
-import '@ui5/webcomponents-icons/dist/money-bills.js'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -127,33 +127,37 @@ const displayName = ref('')
 const loading = ref(false)
 const error = ref('')
 
-function handleTabSelect(e: CustomEvent) {
-  const index = e.detail?.index ?? (e.target as any)?.selectedIndex ?? 0
-  mode.value = index === 0 ? 'login' : 'register'
-}
-
 async function handleSubmit() {
-  if (!email.value || !password.value) {
-    error.value = 'Please fill in all fields'
+  error.value = ''
+
+  if (!email.value.trim()) {
+    error.value = 'Email is required'
     return
   }
-  if (mode.value === 'register' && !displayName.value) {
-    error.value = 'Please enter a display name'
+  if (!password.value) {
+    error.value = 'Password is required'
+    return
+  }
+  if (mode.value === 'register' && !displayName.value.trim()) {
+    error.value = 'Name is required'
+    return
+  }
+  if (mode.value === 'register' && password.value.length < 6) {
+    error.value = 'Password must be at least 6 characters'
     return
   }
 
   loading.value = true
-  error.value = ''
 
   try {
     if (mode.value === 'login') {
-      await appStore.login(email.value, password.value)
+      await appStore.login(email.value.trim(), password.value)
     } else {
-      await appStore.register(email.value, password.value, displayName.value)
+      await appStore.register(email.value.trim(), password.value, displayName.value.trim())
     }
     router.push('/')
   } catch (e: any) {
-    error.value = e.message || 'Connection failed'
+    error.value = e.message || 'Something went wrong'
   } finally {
     loading.value = false
   }
@@ -161,7 +165,7 @@ async function handleSubmit() {
 </script>
 
 <style scoped lang="scss">
-.login {
+.auth {
   width: 100%;
   height: 100vh;
   display: flex;
@@ -172,52 +176,36 @@ async function handleSubmit() {
   padding: 20px;
   overflow: hidden;
 
-  &__orb-bg {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  &__orb {
+  &__glow {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
+    filter: blur(100px);
+    pointer-events: none;
 
     &--1 {
+      width: 500px;
+      height: 500px;
+      top: -200px;
+      right: -100px;
+      background: rgba(120, 80, 255, 0.08);
+    }
+
+    &--2 {
       width: 400px;
       height: 400px;
-      top: -100px;
+      bottom: -150px;
       left: -100px;
-      background: rgba(120, 80, 255, 0.12);
-      animation: float 8s ease-in-out infinite;
-    }
-    &--2 {
-      width: 300px;
-      height: 300px;
-      bottom: -50px;
-      right: -50px;
-      background: rgba(0, 229, 255, 0.08);
-      animation: float 10s ease-in-out infinite 2s;
-    }
-    &--3 {
-      width: 200px;
-      height: 200px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255, 171, 0, 0.06);
-      animation: float 12s ease-in-out infinite 4s;
+      background: rgba(0, 229, 255, 0.06);
     }
   }
 
-  &__container {
+  &__wrapper {
     width: 100%;
-    max-width: 440px;
+    max-width: 380px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 32px;
-    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   &__brand {
@@ -225,113 +213,213 @@ async function handleSubmit() {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
   }
 
   &__logo {
-    position: relative;
-    width: 72px;
-    height: 72px;
-
-    &-ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 2px solid rgba(120, 80, 255, 0.3);
-      animation: spin 12s linear infinite;
-      border-top-color: rgba(0, 229, 255, 0.6);
-    }
-
-    &-core {
-      position: absolute;
-      inset: 8px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--violet), var(--cyan));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 30px rgba(120, 80, 255, 0.3);
-    }
-
-    &-letter {
-      font-family: var(--font-display);
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: white;
-    }
+    animation: breathe 3s ease-in-out infinite;
   }
 
   &__title {
     font-family: var(--font-display);
-    font-size: 2.4rem;
+    font-size: 2rem;
     font-weight: 900;
     letter-spacing: -0.02em;
   }
 
-  &__dash {
-    color: var(--text-muted);
-    font-weight: 300;
-  }
-
-  &__tagline {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    font-weight: 300;
-  }
-
   &__card {
-    width: 100%;
-    border-radius: var(--radius-lg);
-    padding: 32px;
+    background: rgba(20, 20, 46, 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 28px;
     position: relative;
-    overflow: hidden;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20px;
+      right: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(120, 80, 255, 0.3), transparent);
+    }
+  }
+
+  &__tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+
+  &__tab {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &--active {
+      background: rgba(120, 80, 255, 0.15);
+      color: var(--violet-bright);
+    }
+
+    &:hover:not(&--active) {
+      color: var(--text-secondary);
+    }
   }
 
   &__form {
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    margin-top: 20px;
+    gap: 16px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.03em;
   }
 
   &__input {
     width: 100%;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s ease;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+
+    &:focus {
+      border-color: rgba(120, 80, 255, 0.4);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 0 3px rgba(120, 80, 255, 0.08);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 
   &__error {
-    margin-top: 4px;
+    font-size: 0.82rem;
+    color: var(--magenta);
+    text-align: center;
+    padding: 10px;
+    background: rgba(255, 64, 129, 0.08);
+    border-radius: 10px;
+    animation: fadeIn 0.2s ease;
   }
 
   &__submit {
     width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--violet), var(--violet-dim));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
     margin-top: 4px;
-    height: 48px;
-    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(120, 80, 255, 0.3);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  &__footer {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  &__link {
+    background: none;
+    border: none;
+    color: var(--violet-bright);
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+
+    &:hover {
+      color: var(--cyan);
+    }
   }
 
   &__features {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid var(--glass-border);
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
   }
 
   &__feature {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
 
-    &-icon {
+    svg {
       color: var(--violet-bright);
-      font-size: 1.2rem;
+      opacity: 0.6;
     }
   }
 }

@@ -1,6 +1,7 @@
 import { config } from '../config/index.js'
 import { prisma } from '../config/database.js'
 import { stellarService } from './stellar.js'
+import { logger } from '../config/logger.js'
 
 let stripe: any = null
 async function getStripe() {
@@ -8,7 +9,13 @@ async function getStripe() {
     try {
       const StripeMod = await import('stripe')
       stripe = new StripeMod.default(config.stripe.secretKey, { apiVersion: '2024-04-10' })
-    } catch {}
+    } catch (err: any) {
+      if (config.isProduction) {
+        logger.error('[Payment] Failed to load Stripe SDK:', err.message)
+        throw new Error('Payment service unavailable')
+      }
+      logger.warn('[Payment] Stripe SDK not available - dev mode auto-complete enabled')
+    }
   }
   return stripe
 }
@@ -21,6 +28,28 @@ export class PaymentService {
 
     const pkg = config.token.packages[packageIndex]
     if (!pkg) throw new Error('Invalid package')
+
+    // Idempotency: check for recent pending purchase of same package
+    const recentPending = await prisma.transaction.findFirst({
+      where: {
+        userId,
+        type: 'PURCHASE',
+        status: 'PENDING',
+        tokenAmount: pkg.tokens,
+        createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+      },
+    })
+    if (recentPending) {
+      const stripeClient = await getStripe()
+      if (stripeClient && recentPending.stripeId) {
+        return {
+          transactionId: recentPending.id,
+          checkoutUrl: null,
+          sessionId: recentPending.stripeId,
+          message: 'Purchase already in progress',
+        }
+      }
+    }
 
     // Create pending transaction
     const transaction = await prisma.transaction.create({
@@ -74,13 +103,46 @@ export class PaymentService {
       }
     }
 
-    // If no Stripe, auto-complete for dev/testing
+    // If no Stripe, auto-complete only in non-production
+    if (config.isProduction) {
+      throw new Error('Payment service not configured')
+    }
     return this.completePurchase(transaction.id, userId, pkg.tokens)
   }
 
   async completePurchase(transactionId: string, userId: string, tokenAmount: number) {
+    // Idempotency: atomically transition PENDING -> COMPLETED
+    const updated = await prisma.transaction.updateMany({
+      where: {
+        id: transactionId,
+        status: 'PENDING',
+      },
+      data: { status: 'PROCESSING' },
+    })
+
+    if (updated.count === 0) {
+      // Already processed or doesn't exist
+      const existing = await prisma.transaction.findUnique({ where: { id: transactionId } })
+      if (!existing) throw new Error('Transaction not found')
+      if (existing.status === 'COMPLETED') {
+        return {
+          transactionId,
+          txHash: existing.txHash,
+          tokenAmount: existing.tokenAmount,
+          message: 'Transaction already completed',
+        }
+      }
+      throw new Error('Transaction is being processed')
+    }
+
     const user = await prisma.user.findUnique({ where: { id: userId } })
-    if (!user || !user.stellarPublicKey) throw new Error('User or wallet not found')
+    if (!user || !user.stellarPublicKey) {
+      await prisma.transaction.update({
+        where: { id: transactionId },
+        data: { status: 'FAILED' },
+      })
+      throw new Error('User or wallet not found')
+    }
 
     // Send tokens on Stellar
     let txHash: string | null = null
@@ -98,14 +160,22 @@ export class PaymentService {
       throw new Error('Token transfer failed')
     }
 
-    // Update transaction
-    await prisma.transaction.update({
-      where: { id: transactionId },
-      data: {
-        status: 'COMPLETED',
-        txHash,
-      },
-    })
+    // Update transaction and balance atomically
+    await prisma.$transaction([
+      prisma.transaction.update({
+        where: { id: transactionId },
+        data: {
+          status: 'COMPLETED',
+          txHash,
+        },
+      }),
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          tokenBalance: (parseFloat(user.tokenBalance || '0') + tokenAmount).toString(),
+        },
+      }),
+    ])
 
     logger.info(`[Payment] Completed: ${tokenAmount} iLe to ${user.email}`)
 
@@ -123,6 +193,10 @@ export class PaymentService {
       throw new Error('Stripe not configured')
     }
 
+    if (!Buffer.isBuffer(body)) {
+      throw new Error('Webhook body must be raw Buffer for signature verification')
+    }
+
     const event = stripeClient.webhooks.constructEvent(
       body,
       signature,
@@ -130,7 +204,7 @@ export class PaymentService {
     )
 
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session
+      const session = event.data.object as any
       const transactionId = session.metadata?.transactionId
       const userId = session.metadata?.userId
       const packageIndex = parseInt(session.metadata?.packageIndex || '0')
@@ -162,7 +236,9 @@ export class PaymentService {
     if (!user) throw new Error('User not found')
     if (!user.stellarPublicKey) throw new Error('User has no wallet')
 
-    const balance = parseFloat(user.tokenBalance || '0')
+    // Check on-chain balance instead of local cache
+    const onChainBalance = await stellarService.getBalance(user.stellarPublicKey)
+    const balance = parseFloat(onChainBalance)
     if (balance < amount) throw new Error('Insufficient balance')
 
     let txHash: string | null = null
@@ -172,22 +248,25 @@ export class PaymentService {
       throw new Error(`Token transfer failed: ${err.message}`)
     }
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: { tokenBalance: (balance - amount).toString() }
-    })
-
-    await prisma.transaction.create({
-      data: {
-        userId,
-        type: 'SEND',
-        amount: 0,
-        tokenAmount: amount,
-        currency: 'ILE',
-        status: 'COMPLETED',
-        txHash,
-      }
-    })
+    // Update local balance cache and record transaction atomically
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { tokenBalance: (balance - amount).toString() }
+      }),
+      prisma.transaction.create({
+        data: {
+          userId,
+          type: 'SEND',
+          amount: 0,
+          tokenAmount: amount,
+          currency: 'ILE',
+          status: 'COMPLETED',
+          txHash,
+          metadata: JSON.stringify({ recipientAddress }),
+        }
+      }),
+    ])
 
     return {
       txHash,

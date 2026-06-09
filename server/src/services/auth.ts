@@ -1,19 +1,14 @@
 import { prisma } from '../config/database.js'
 import { stellarService } from './stellar.js'
 import { hashPassword, comparePassword, generateToken, encryptSecret } from '../utils/crypto.js'
-import { validate, registerSchema, loginSchema } from '../utils/validation.js'
 import { logger } from '../config/logger.js'
 
-type Tier = 'FREE' | 'BASIC' | 'PREMIUM'
-
 export class AuthService {
-  async register(data: unknown) {
-    const input = validate(registerSchema, data)
-
-    const existing = await prisma.user.findUnique({ where: { email: input.email } })
+  async register(data: { email: string; password: string; displayName: string }) {
+    const existing = await prisma.user.findUnique({ where: { email: data.email } })
     if (existing) throw new Error('Email already registered')
 
-    const passwordHash = await hashPassword(input.password)
+    const passwordHash = await hashPassword(data.password)
 
     // Generate Stellar wallet
     const keypair = await stellarService.generateKeypair()
@@ -21,9 +16,9 @@ export class AuthService {
 
     const user = await prisma.user.create({
       data: {
-        email: input.email,
+        email: data.email,
         passwordHash,
-        displayName: input.displayName,
+        displayName: data.displayName,
         stellarPublicKey: keypair.publicKey,
         encryptedSecret,
       },
@@ -42,8 +37,8 @@ export class AuthService {
     // Create and fund Stellar account (non-blocking)
     stellarService.createAccount(keypair.publicKey)
       .then(() => stellarService.createTrustline(keypair.secret))
-      .then(() => console.log(`[Auth] Stellar wallet created for ${user.email}`))
-      .catch((err: any) => console.warn(`[Auth] Stellar setup deferred: ${err.message}`))
+      .then(() => logger.info(`[Auth] Stellar wallet created for user`))
+      .catch((err: any) => logger.warn(`[Auth] Stellar setup deferred: ${err.message}`))
 
     const token = generateToken({
       userId: user.id,
@@ -54,13 +49,11 @@ export class AuthService {
     return { user: safeUser, token }
   }
 
-  async login(data: unknown) {
-    const input = validate(loginSchema, data)
-
-    const user = await prisma.user.findUnique({ where: { email: input.email } })
+  async login(data: { email: string; password: string }) {
+    const user = await prisma.user.findUnique({ where: { email: data.email } })
     if (!user) throw new Error('Invalid email or password')
 
-    const valid = await comparePassword(input.password, user.passwordHash)
+    const valid = await comparePassword(data.password, user.passwordHash)
     if (!valid) throw new Error('Invalid email or password')
 
     const token = generateToken({
