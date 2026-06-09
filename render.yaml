@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ile-play-api
+    runtime: node
+    region: oregon
+    buildCommand: cd server && npm install && npx prisma generate && npx prisma db push
+    startCommand: cd server && npx tsx src/index.ts
+    envVars:
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: STELLAR_NETWORK
+        value: testnet
+      - key: CORS_ORIGIN
+        sync: false
+      - key: NODE_ENV
+        value: production

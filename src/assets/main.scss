@@ -100,7 +100,24 @@ img {
   will-change: transform;
 }
 
-// Utility classes
+ui5-card,
+ui5-dialog,
+ui5-popover,
+ui5-panel,
+ui5-table {
+  font-family: var(--font-body);
+}
+
+ui5-button {
+  font-family: var(--font-body);
+}
+
+ui5-input,
+ui5-select,
+ui5-textarea {
+  font-family: var(--font-body);
+}
+
 .glass {
   background: var(--glass);
   backdrop-filter: blur(20px) saturate(1.5);
@@ -134,7 +151,6 @@ img {
   background-clip: text;
 }
 
-// Animations
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   33% { transform: translateY(-8px) rotate(1deg); }

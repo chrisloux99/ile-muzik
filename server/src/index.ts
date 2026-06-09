@@ -11,7 +11,7 @@ import streamRoutes from './routes/streams.js'
 const app = express()
 
 app.use(cors({
-  origin: config.corsOrigin,
+  origin: config.corsOrigin === '*' ? '*' : config.corsOrigin,
   credentials: true,
 }))
 
@@ -39,7 +39,7 @@ app.use(errorHandler)
 async function start() {
   await connectDB()
 
-  app.listen(config.port, () => {
+  app.listen(config.port, '0.0.0.0', () => {
     console.log(`[Server] iLe-Play API running on port ${config.port}`)
     console.log(`[Server] CORS origin: ${config.corsOrigin}`)
     console.log(`[Server] Stellar network: ${config.stellar.network}`)

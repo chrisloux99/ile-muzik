@@ -7,17 +7,33 @@
       </div>
 
       <nav class="sidebar__nav">
-        <router-link
-          v-for="item in navItems"
-          :key="item.to"
-          :to="item.to"
-          class="sidebar__link"
-          :class="{ 'sidebar__link--active': route.path === item.to }"
-          @click="closeMobile"
-        >
-          <div class="sidebar__icon" v-html="item.icon"></div>
-          <span>{{ item.label }}</span>
-        </router-link>
+        <div class="sidebar__nav-group">
+          <router-link
+            v-for="item in mainNavItems"
+            :key="item.to"
+            :to="item.to"
+            class="sidebar__link"
+            :class="{ 'sidebar__link--active': route.path === item.to }"
+            @click="closeMobile"
+          >
+            <div class="sidebar__icon" v-html="item.icon"></div>
+            <span>{{ item.label }}</span>
+          </router-link>
+        </div>
+        <div class="sidebar__divider"></div>
+        <div class="sidebar__nav-group">
+          <router-link
+            v-for="item in accountNavItems"
+            :key="item.to"
+            :to="item.to"
+            class="sidebar__link"
+            :class="{ 'sidebar__link--active': route.path === item.to }"
+            @click="closeMobile"
+          >
+            <div class="sidebar__icon" v-html="item.icon"></div>
+            <span>{{ item.label }}</span>
+          </router-link>
+        </div>
       </nav>
 
       <div class="sidebar__footer">
@@ -50,7 +66,7 @@ const appStore = useAppStore()
 const { sidebarOpen } = storeToRefs(appStore)
 const { toggleSidebar } = appStore
 
-const navItems = [
+const mainNavItems = [
   {
     to: '/',
     label: 'Home',
@@ -70,6 +86,19 @@ const navItems = [
     to: '/queue',
     label: 'Queue',
     icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'
+  }
+]
+
+const accountNavItems = [
+  {
+    to: '/wallet',
+    label: 'Wallet',
+    icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg>'
+  },
+  {
+    to: '/subscriptions',
+    label: 'Plans',
+    icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>'
   }
 ]
 
@@ -182,6 +211,19 @@ async function handleLogout() {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    overflow-y: auto;
+  }
+
+  &__nav-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__divider {
+    height: 1px;
+    background: var(--border);
+    margin: 8px 16px;
   }
 
   &__link {

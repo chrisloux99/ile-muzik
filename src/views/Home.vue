@@ -3,26 +3,74 @@
     <section class="hero">
       <div class="hero__content">
         <div class="hero__greeting">
-          <span class="hero__wave">Hello</span>
-          <span class="hero__name">{{ userName }}</span>
+          <ui5-avatar :initials="userInitial" shape="Circle" size="M" color-scheme="Accent7"></ui5-avatar>
+          <div class="hero__greeting-text">
+            <span class="hero__wave">Welcome back</span>
+            <span class="hero__name">{{ userName }}</span>
+          </div>
         </div>
         <h1 class="hero__title">
           <span class="gradient-text">Discover</span> your sound
         </h1>
-        <p class="hero__sub">
-          <span class="hero__token-badge">
-            <span class="hero__token-dot"></span>
-            {{ tokenBalance.toFixed(2) }} iLe
-          </span>
-          <span class="hero__divider">|</span>
-          <span>{{ streamsThisMonth }}/{{ streamLimit === -1 ? '∞' : streamLimit }} streams</span>
-        </p>
       </div>
 
-      <button class="hero__play-btn" @click="playRandom">
-        <div class="hero__play-ring"></div>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-      </button>
+      <ui5-button design="Emphasized" class="hero__play-btn" @click="playRandom">
+        <ui5-icon name="play" slot="icon"></ui5-icon>
+      </ui5-button>
+    </section>
+
+    <section class="stats-grid">
+      <ui5-card class="stat-card" @click="$router.push('/wallet')" interactive>
+        <div class="stat-card__content">
+          <ui5-icon name="wallet" class="stat-card__icon stat-card__icon--gold"></ui5-icon>
+          <div class="stat-card__info">
+            <span class="stat-card__value">{{ tokenBalance.toFixed(2) }}</span>
+            <span class="stat-card__label">iLe Balance</span>
+          </div>
+          <ui5-icon name="slim-arrow-right" class="stat-card__arrow"></ui5-icon>
+        </div>
+      </ui5-card>
+
+      <ui5-card class="stat-card" @click="$router.push('/subscriptions')" interactive>
+        <div class="stat-card__content">
+          <ui5-icon name="headset" class="stat-card__icon stat-card__icon--violet"></ui5-icon>
+          <div class="stat-card__info">
+            <span class="stat-card__value">{{ streamsThisMonth }}/{{ streamLimit === -1 ? '∞' : streamLimit }}</span>
+            <span class="stat-card__label">Streams This Month</span>
+          </div>
+          <ui5-icon name="slim-arrow-right" class="stat-card__arrow"></ui5-icon>
+        </div>
+      </ui5-card>
+
+      <ui5-card class="stat-card" @click="$router.push('/subscriptions')" interactive>
+        <div class="stat-card__content">
+          <ui5-icon name="business-card" class="stat-card__icon stat-card__icon--cyan"></ui5-icon>
+          <div class="stat-card__info">
+            <span class="stat-card__value">{{ userTier }}</span>
+            <span class="stat-card__label">Current Plan</span>
+          </div>
+          <ui5-icon name="slim-arrow-right" class="stat-card__arrow"></ui5-icon>
+        </div>
+      </ui5-card>
+    </section>
+
+    <section class="quick-actions">
+      <ui5-button design="Transparent" class="action-btn" @click="playRandom">
+        <ui5-icon name="synchronize" slot="icon"></ui5-icon>
+        Shuffle Play
+      </ui5-button>
+      <ui5-button design="Transparent" class="action-btn" @click="$router.push('/wallet')">
+        <ui5-icon name="wallet" slot="icon"></ui5-icon>
+        Wallet
+      </ui5-button>
+      <ui5-button design="Transparent" class="action-btn" @click="$router.push('/subscriptions')">
+        <ui5-icon name="business-card" slot="icon"></ui5-icon>
+        Plans
+      </ui5-button>
+      <ui5-button design="Transparent" class="action-btn" @click="$router.push('/search')">
+        <ui5-icon name="search" slot="icon"></ui5-icon>
+        Search
+      </ui5-button>
     </section>
 
     <section class="section" v-if="genres.length">
@@ -31,16 +79,14 @@
         <div class="section__line"></div>
       </div>
       <div class="genre-grid">
-        <button
+        <ui5-token
           v-for="(g, i) in genres"
           :key="g.name"
-          class="genre-chip"
+          :text="g.name + ' (' + g.albumCount + ')'"
           :style="{ '--delay': i * 0.04 + 's' }"
           @click="playGenre(g.name)"
-        >
-          <span class="genre-chip__name">{{ g.name }}</span>
-          <span class="genre-chip__count">{{ g.albumCount }}</span>
-        </button>
+          class="genre-chip"
+        ></ui5-token>
       </div>
     </section>
 
@@ -50,23 +96,24 @@
         <div class="section__line"></div>
       </div>
       <div class="album-row">
-        <div
+        <ui5-card
           v-for="a in recentAlbums"
           :key="a.id"
           class="album-tile"
           @click="playAlbum(a)"
+          interactive
         >
           <div class="album-tile__art">
             <img :src="a.image" :alt="a.name" loading="lazy" />
             <div class="album-tile__play">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              <ui5-icon name="play" class="album-tile__play-icon"></ui5-icon>
             </div>
           </div>
           <div class="album-tile__meta">
             <span class="album-tile__name">{{ a.name }}</span>
             <span class="album-tile__artist">{{ a.artists?.[0]?.name }}</span>
           </div>
-        </div>
+        </ui5-card>
       </div>
     </section>
 
@@ -76,29 +123,28 @@
         <div class="section__line"></div>
       </div>
       <div class="album-row">
-        <div
+        <ui5-card
           v-for="a in newAlbums"
           :key="a.id"
           class="album-tile"
           @click="playAlbum(a)"
+          interactive
         >
           <div class="album-tile__art">
             <img :src="a.image" :alt="a.name" loading="lazy" />
             <div class="album-tile__play">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              <ui5-icon name="play" class="album-tile__play-icon"></ui5-icon>
             </div>
           </div>
           <div class="album-tile__meta">
             <span class="album-tile__name">{{ a.name }}</span>
             <span class="album-tile__artist">{{ a.artists?.[0]?.name }}</span>
           </div>
-        </div>
+        </ui5-card>
       </div>
     </section>
 
-    <div v-if="loading" class="loader">
-      <div class="loader__orb"></div>
-    </div>
+    <ui5-busy-indicator v-if="loading" active size="Large" class="loader"></ui5-busy-indicator>
   </div>
 </template>
 
@@ -109,6 +155,20 @@ import { api } from '@/api/client'
 import { useAppStore } from '@/stores/app'
 import { usePlayerStore } from '@/stores/player'
 
+import '@ui5/webcomponents/dist/Button.js'
+import '@ui5/webcomponents/dist/Card.js'
+import '@ui5/webcomponents/dist/Icon.js'
+import '@ui5/webcomponents/dist/Avatar.js'
+import '@ui5/webcomponents/dist/Token.js'
+import '@ui5/webcomponents/dist/BusyIndicator.js'
+import '@ui5/webcomponents-icons/dist/play.js'
+import '@ui5/webcomponents-icons/dist/synchronize.js'
+import '@ui5/webcomponents-icons/dist/search.js'
+import '@ui5/webcomponents-icons/dist/wallet.js'
+import '@ui5/webcomponents-icons/dist/business-card.js'
+import '@ui5/webcomponents-icons/dist/headset.js'
+import '@ui5/webcomponents-icons/dist/slim-arrow-right.js'
+
 const appStore = useAppStore()
 const player = usePlayerStore()
 const genres = ref<Genre[]>([])
@@ -117,10 +177,15 @@ const newAlbums = ref<Album[]>([])
 const loading = ref(true)
 
 const userName = computed(() => appStore.user?.displayName || appStore.getDisplayName?.() || 'there')
+const userInitial = computed(() => {
+  const name = userName.value
+  return name ? name.charAt(0).toUpperCase() : 'U'
+})
 const tokenBalance = computed(() => appStore.tokenBalance)
 const streamsThisMonth = computed(() => appStore.user?.streamsThisMonth || 0)
+const userTier = computed(() => appStore.user?.tier || 'FREE')
 const streamLimit = computed(() => {
-  const tier = appStore.user?.tier || 'FREE'
+  const tier = userTier.value
   const limits: Record<string, number> = { FREE: 20, BASIC: 200, PREMIUM: -1 }
   return limits[tier] ?? 20
 })
@@ -173,7 +238,7 @@ onMounted(load)
 }
 
 .hero {
-  padding: 48px 0 40px;
+  padding: 48px 0 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -186,19 +251,26 @@ onMounted(load)
   &__greeting {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  &__greeting-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   &__wave {
+    font-size: 0.78rem;
+    color: var(--text-muted);
     animation: float 2s ease-in-out infinite;
     display: inline-block;
   }
 
   &__name {
     font-weight: 600;
+    font-size: 1rem;
     color: var(--text-primary);
   }
 
@@ -207,73 +279,128 @@ onMounted(load)
     font-size: 2.2rem;
     font-weight: 900;
     line-height: 1.15;
-    margin-bottom: 12px;
 
     @media (max-width: 768px) {
       font-size: 1.6rem;
     }
   }
 
-  &__sub {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-  }
-
-  &__token-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    background: rgba(255, 215, 0, 0.08);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    border-radius: 100px;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    color: var(--gold);
-  }
-
-  &__token-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--gold);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  &__divider {
-    color: var(--text-muted);
-  }
-
   &__play-btn {
-    position: relative;
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--violet), var(--cyan));
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all var(--transition-smooth);
+    min-width: 72px;
+    padding: 0;
+    animation: breathe 3s ease-in-out infinite;
 
     &:hover {
       transform: scale(1.08);
-      box-shadow: 0 0 40px rgba(120, 80, 255, 0.4);
     }
 
     &:active { transform: scale(0.95); }
   }
+}
 
-  &__play-ring {
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    border: 2px solid rgba(120, 80, 255, 0.2);
-    animation: breathe 3s ease-in-out infinite;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+
+  &__content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+  }
+
+  &__icon {
+    font-size: 1.5rem;
+
+    &--gold {
+      color: var(--gold);
+    }
+
+    &--violet {
+      color: var(--violet-bright);
+    }
+
+    &--cyan {
+      color: var(--cyan);
+    }
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__value {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  &__arrow {
+    color: var(--text-muted);
+    transition: transform var(--transition-fast);
+  }
+
+  &:hover &__arrow {
+    transform: translateX(4px);
+    color: var(--violet-bright);
+  }
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 32px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 12px;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  height: auto;
+  transition: all var(--transition-smooth);
+
+  &:hover {
+    color: var(--text-primary);
+    background: rgba(120, 80, 255, 0.08);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 
@@ -308,32 +435,13 @@ onMounted(load)
 }
 
 .genre-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-pill);
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-smooth);
   animation: slideUp 0.4s ease both;
   animation-delay: var(--delay);
 
   &:hover {
-    color: var(--text-primary);
-    border-color: rgba(120, 80, 255, 0.3);
-    background: rgba(120, 80, 255, 0.08);
     transform: translateY(-2px);
-  }
-
-  &__count {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
   }
 }
 
@@ -351,11 +459,16 @@ onMounted(load)
   flex: 0 0 170px;
   scroll-snap-align: start;
   cursor: pointer;
+  transition: all var(--transition-smooth);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow);
+  }
 
   &__art {
     width: 170px;
     height: 170px;
-    border-radius: var(--radius);
     overflow: hidden;
     position: relative;
     background: var(--surface);
@@ -378,7 +491,9 @@ onMounted(load)
     opacity: 0;
     transition: all var(--transition-smooth);
 
-    svg {
+    &-icon {
+      font-size: 2rem;
+      color: white;
       transform: scale(0.8);
       transition: transform var(--transition-spring);
     }
@@ -388,7 +503,7 @@ onMounted(load)
     .album-tile__art img { transform: scale(1.08); }
     .album-tile__play {
       opacity: 1;
-      svg { transform: scale(1); }
+      .album-tile__play-icon { transform: scale(1); }
     }
   }
 
@@ -420,14 +535,5 @@ onMounted(load)
   display: flex;
   justify-content: center;
   padding: 80px 0;
-
-  &__orb {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--violet), var(--cyan));
-    animation: breathe 1.5s ease-in-out infinite;
-    box-shadow: 0 0 40px rgba(120, 80, 255, 0.3);
-  }
 }
 </style>

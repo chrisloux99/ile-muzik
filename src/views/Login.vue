@@ -20,85 +20,81 @@
         <p class="login__tagline">Music meets blockchain</p>
       </div>
 
-      <div class="login__card glass">
-        <div class="login__tabs">
-          <button
-            class="login__tab"
-            :class="{ 'login__tab--active': mode === 'login' }"
-            @click="mode = 'login'"
-          >Sign In</button>
-          <button
-            class="login__tab"
-            :class="{ 'login__tab--active': mode === 'register' }"
-            @click="mode = 'register'"
-          >Create Account</button>
-        </div>
+      <ui5-card class="login__card">
+        <ui5-tabcontainer @tab-select="handleTabSelect" :selected-tab="mode === 'login' ? 0 : 1">
+          <ui5-tab text="Sign In" :selected="mode === 'login'"></ui5-tab>
+          <ui5-tab text="Create Account" :selected="mode === 'register'"></ui5-tab>
+        </ui5-tabcontainer>
 
         <form class="login__form" @submit.prevent="handleSubmit">
-          <div v-if="mode === 'register'" class="login__field">
-            <label class="login__label">Display Name</label>
-            <input
-              v-model="displayName"
-              type="text"
-              placeholder="Your display name"
-              :disabled="loading"
-              class="login__input"
-            />
-          </div>
+          <ui5-input
+            v-if="mode === 'register'"
+            v-model="displayName"
+            placeholder="Your display name"
+            :disabled="loading"
+            class="login__input"
+            required
+          >
+            <ui5-label slot="label">Display Name</ui5-label>
+          </ui5-input>
 
-          <div class="login__field">
-            <label class="login__label">Email</label>
-            <input
-              v-model="email"
-              type="email"
-              placeholder="you@example.com"
-              :disabled="loading"
-              autocomplete="email"
-              class="login__input"
-            />
-          </div>
+          <ui5-input
+            v-model="email"
+            type="Email"
+            placeholder="you@example.com"
+            :disabled="loading"
+            required
+            class="login__input"
+          >
+            <ui5-label slot="label">Email</ui5-label>
+          </ui5-input>
 
-          <div class="login__field">
-            <label class="login__label">Password</label>
-            <input
-              v-model="password"
-              type="password"
-              placeholder="Your password"
-              :disabled="loading"
-              autocomplete="current-password"
-              class="login__input"
-            />
-          </div>
+          <ui5-input
+            v-model="password"
+            type="Password"
+            placeholder="Your password"
+            :disabled="loading"
+            required
+            class="login__input"
+          >
+            <ui5-label slot="label">Password</ui5-label>
+          </ui5-input>
 
-          <p v-if="error" class="login__error">{{ error }}</p>
+          <ui5-message-strip
+            v-if="error"
+            design="Negative"
+            class="login__error"
+            @close="error = ''"
+          >
+            {{ error }}
+          </ui5-message-strip>
 
-          <button type="submit" class="login__submit" :disabled="loading">
-            <span v-if="loading" class="login__spinner"></span>
+          <ui5-button
+            type="Submit"
+            design="Emphasized"
+            :disabled="loading"
+            class="login__submit"
+          >
+            <ui5-busy-indicator v-if="loading" active size="Small"></ui5-busy-indicator>
             <span v-else>{{ mode === 'login' ? 'Sign In' : 'Create Account' }}</span>
-          </button>
+          </ui5-button>
         </form>
 
         <div class="login__features">
           <div class="login__feature">
-            <div class="login__feature-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            </div>
+            <ui5-icon name="history" class="login__feature-icon"></ui5-icon>
             <span>Stream music with iLe tokens</span>
           </div>
           <div class="login__feature">
-            <div class="login__feature-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
-            </div>
+            <ui5-icon name="chain-link" class="login__feature-icon"></ui5-icon>
             <span>Powered by Stellar blockchain</span>
           </div>
           <div class="login__feature">
-            <div class="login__feature-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
+            <ui5-icon name="money-bills" class="login__feature-icon"></ui5-icon>
             <span>Micropayments per stream</span>
           </div>
         </div>
-      </div>
+      </ui5-card>
     </div>
   </div>
 </template>
@@ -107,6 +103,19 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+
+import '@ui5/webcomponents/dist/Input.js'
+import '@ui5/webcomponents/dist/Button.js'
+import '@ui5/webcomponents/dist/Card.js'
+import '@ui5/webcomponents/dist/Tab.js'
+import '@ui5/webcomponents/dist/TabContainer.js'
+import '@ui5/webcomponents/dist/Label.js'
+import '@ui5/webcomponents/dist/MessageStrip.js'
+import '@ui5/webcomponents/dist/BusyIndicator.js'
+import '@ui5/webcomponents/dist/Icon.js'
+import '@ui5/webcomponents-icons/dist/history.js'
+import '@ui5/webcomponents-icons/dist/chain-link.js'
+import '@ui5/webcomponents-icons/dist/money-bills.js'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -117,6 +126,11 @@ const password = ref('')
 const displayName = ref('')
 const loading = ref(false)
 const error = ref('')
+
+function handleTabSelect(e: CustomEvent) {
+  const index = e.detail?.index ?? (e.target as any)?.selectedIndex ?? 0
+  mode.value = index === 0 ? 'login' : 'register'
+}
 
 async function handleSubmit() {
   if (!email.value || !password.value) {
@@ -273,137 +287,30 @@ async function handleSubmit() {
     padding: 32px;
     position: relative;
     overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--violet), var(--cyan), var(--amber));
-    }
-  }
-
-  &__tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 28px;
-    padding: 4px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--radius);
-  }
-
-  &__tab {
-    flex: 1;
-    padding: 10px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-smooth);
-
-    &--active {
-      background: rgba(120, 80, 255, 0.15);
-      color: var(--violet-bright);
-    }
-
-    &:hover:not(&--active) {
-      color: var(--text-primary);
-    }
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
   }
 
   &__form {
     display: flex;
     flex-direction: column;
     gap: 18px;
-  }
-
-  &__field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  &__label {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    margin-top: 20px;
   }
 
   &__input {
     width: 100%;
-    padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius);
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    outline: none;
-    transition: all var(--transition-smooth);
-
-    &::placeholder { color: var(--text-muted); }
-
-    &:focus {
-      border-color: rgba(120, 80, 255, 0.4);
-      background: rgba(255, 255, 255, 0.06);
-      box-shadow: 0 0 0 3px rgba(120, 80, 255, 0.1);
-    }
-
-    &:disabled { opacity: 0.5; }
   }
 
   &__error {
-    font-size: 0.82rem;
-    color: var(--magenta);
-    text-align: center;
-    padding: 8px;
-    background: rgba(255, 64, 129, 0.08);
-    border-radius: var(--radius-sm);
-    animation: fadeIn 0.2s ease;
+    margin-top: 4px;
   }
 
   &__submit {
     width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, var(--violet), var(--violet-dim));
-    border: none;
-    border-radius: var(--radius);
-    color: white;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-smooth);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
     margin-top: 4px;
-
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, var(--violet-bright), var(--violet));
-      box-shadow: 0 0 30px rgba(120, 80, 255, 0.3);
-      transform: translateY(-1px);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  &__spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
+    height: 48px;
+    font-size: 1rem;
   }
 
   &__features {
@@ -423,14 +330,8 @@ async function handleSubmit() {
     color: var(--text-secondary);
 
     &-icon {
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: rgba(120, 80, 255, 0.1);
       color: var(--violet-bright);
+      font-size: 1.2rem;
     }
   }
 }

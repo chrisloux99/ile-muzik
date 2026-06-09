@@ -2,92 +2,160 @@
   <div class="wallet">
     <div class="wallet__header">
       <h1 class="wallet__title">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/>
-        </svg>
+        <ui5-icon name="wallet" class="wallet__title-icon"></ui5-icon>
         Wallet
       </h1>
+      <ui5-button design="Transparent" @click="load" :disabled="refreshing" class="wallet__refresh-btn">
+        <ui5-icon name="refresh" :class="{ 'spinning': refreshing }"></ui5-icon>
+      </ui5-button>
     </div>
 
-    <div class="wallet__hero glass">
-      <div class="wallet__balance-section">
-        <span class="wallet__balance-label">Your Balance</span>
-        <div class="wallet__balance">
-          <span class="wallet__token-symbol">
-            <span class="wallet__token-icon">i</span>
-          </span>
-          <span class="wallet__amount">{{ balance.toFixed(4) }}</span>
-          <span class="wallet__currency">iLe</span>
+    <ui5-card class="wallet__hero">
+      <div class="wallet__hero-content">
+        <div class="wallet__balance-section">
+          <span class="wallet__balance-label">Your Balance</span>
+          <div class="wallet__balance">
+            <ui5-avatar initials="i" shape="Circle" size="S" color-scheme="Accent6"></ui5-avatar>
+            <span class="wallet__amount">{{ balance.toFixed(4) }}</span>
+            <span class="wallet__currency">iLe</span>
+          </div>
+          <span class="wallet__usd-equivalent">≈ ${{ usdEquivalent.toFixed(4) }} USD</span>
         </div>
-        <span class="wallet__usd-equivalent">≈ ${{ usdEquivalent.toFixed(4) }} USD</span>
-      </div>
 
-      <div class="wallet__address" v-if="stellarKey">
-        <span class="wallet__address-label">Stellar Wallet</span>
-        <code class="wallet__address-key">{{ truncatedKey }}</code>
-        <button class="wallet__copy-btn" @click="copyKey">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-        </button>
-      </div>
-    </div>
+        <div class="wallet__actions">
+          <ui5-button design="Emphasized" @click="scrollToPackages" class="wallet__action-btn">
+            <ui5-icon name="add" slot="icon"></ui5-icon>
+            Buy Tokens
+          </ui5-button>
+          <ui5-button design="Transparent" @click="showSendDialog" class="wallet__action-btn">
+            <ui5-icon name="paper-plane" slot="icon"></ui5-icon>
+            Send
+          </ui5-button>
+          <ui5-button design="Transparent" @click="showReceiveDialog" class="wallet__action-btn">
+            <ui5-icon name="download" slot="icon"></ui5-icon>
+            Receive
+          </ui5-button>
+        </div>
 
-    <section class="wallet__packages">
+        <div class="wallet__address" v-if="stellarKey">
+          <span class="wallet__address-label">Stellar Wallet</span>
+          <code class="wallet__address-key">{{ truncatedKey }}</code>
+          <ui5-button design="Transparent" @click="copyKey" class="wallet__copy-btn">
+            <ui5-icon :name="copied ? 'accept' : 'copy'"></ui5-icon>
+          </ui5-button>
+        </div>
+      </div>
+    </ui5-card>
+
+    <section class="wallet__packages" id="packages-section">
       <div class="wallet__section-header">
         <h2 class="wallet__section-title">Buy iLe Tokens</h2>
         <div class="wallet__section-line"></div>
       </div>
 
       <div class="wallet__package-grid">
-        <button
+        <ui5-card
           v-for="(pkg, i) in packages"
           :key="i"
-          class="wallet__package glass"
+          class="wallet__package"
           :class="{ 'wallet__package--popular': i === 2 }"
           @click="purchasePackage(i)"
+          interactive
           :disabled="purchasing"
         >
-          <div class="wallet__package-popular" v-if="i === 2">Best Value</div>
-          <div class="wallet__package-tokens">
-            <span class="wallet__package-icon">i</span>
-            {{ pkg.tokens.toLocaleString() }}
+          <ui5-tag v-if="i === 2" class="wallet__package-badge" design="Positive">Best Value</ui5-tag>
+          <div class="wallet__package-content">
+            <div class="wallet__package-tokens">
+              <ui5-avatar initials="i" shape="Circle" size="XS" color-scheme="Accent6"></ui5-avatar>
+              {{ pkg.tokens.toLocaleString() }}
+            </div>
+            <div class="wallet__package-label">{{ pkg.label }}</div>
+            <div class="wallet__package-price">${{ pkg.priceUSD.toFixed(2) }}</div>
+            <div class="wallet__package-per">{{ (pkg.priceUSD / pkg.tokens).toFixed(4) }} / token</div>
           </div>
-          <div class="wallet__package-label">{{ pkg.label }}</div>
-          <div class="wallet__package-price">${{ pkg.priceUSD.toFixed(2) }}</div>
-        </button>
+        </ui5-card>
       </div>
     </section>
 
-    <section class="wallet__history" v-if="transactions.length">
+    <section class="wallet__history">
       <div class="wallet__section-header">
         <h2 class="wallet__section-title">Recent Activity</h2>
         <div class="wallet__section-line"></div>
       </div>
 
-      <div class="wallet__tx-list">
-        <div v-for="tx in transactions" :key="tx.id" class="wallet__tx glass">
-          <div class="wallet__tx-icon" :class="'wallet__tx-icon--' + tx.type.toLowerCase()">
-            <svg v-if="tx.type === 'PURCHASE'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-            <svg v-else-if="tx.type === 'STREAM'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-            </svg>
-            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/>
-            </svg>
+      <div v-if="transactions.length" class="wallet__tx-list">
+        <ui5-card v-for="tx in transactions" :key="tx.id" class="wallet__tx">
+          <div class="wallet__tx-content">
+            <div class="wallet__tx-icon" :class="'wallet__tx-icon--' + tx.type.toLowerCase()">
+              <ui5-icon :name="getTxIcon(tx.type)"></ui5-icon>
+            </div>
+            <div class="wallet__tx-info">
+              <span class="wallet__tx-type">{{ formatTxType(tx.type) }}</span>
+              <span class="wallet__tx-date">{{ formatDate(tx.createdAt) }}</span>
+            </div>
+            <div class="wallet__tx-amount" :class="tx.type === 'PURCHASE' ? 'wallet__tx-amount--positive' : 'wallet__tx-amount--negative'">
+              {{ tx.type === 'PURCHASE' ? '+' : '-' }}{{ parseFloat(tx.tokenAmount).toFixed(2) }} iLe
+            </div>
           </div>
-          <div class="wallet__tx-info">
-            <span class="wallet__tx-type">{{ tx.type }}</span>
-            <span class="wallet__tx-date">{{ new Date(tx.createdAt).toLocaleDateString() }}</span>
-          </div>
-          <div class="wallet__tx-amount" :class="tx.type === 'PURCHASE' ? 'wallet__tx-amount--positive' : 'wallet__tx-amount--negative'">
-            {{ tx.type === 'PURCHASE' ? '+' : '-' }}{{ parseFloat(tx.tokenAmount).toFixed(2) }} iLe
-          </div>
+        </ui5-card>
+      </div>
+
+      <ui5-card v-else class="wallet__empty">
+        <ui5-icon name="wallet" class="wallet__empty-icon"></ui5-icon>
+        <p>No transactions yet</p>
+        <span>Your purchase and stream history will appear here</span>
+      </ui5-card>
+    </section>
+
+    <ui5-dialog ref="sendDialog" header-text="Send iLe Tokens">
+      <div class="dialog-content">
+        <ui5-input
+          v-model="sendAddress"
+          placeholder="Enter Stellar address"
+          class="dialog-input"
+        >
+          <ui5-label slot="label">Recipient Address</ui5-label>
+        </ui5-input>
+
+        <ui5-input
+          v-model="sendAmount"
+          type="Number"
+          placeholder="0.00"
+          class="dialog-input"
+        >
+          <ui5-label slot="label">Amount (iLe)</ui5-label>
+          <span slot="valueStateMessage">Balance: {{ balance.toFixed(4) }} iLe</span>
+        </ui5-input>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <ui5-button design="Transparent" @click="closeSendDialog">Cancel</ui5-button>
+        <ui5-button design="Emphasized" @click="handleSend" :disabled="!sendAddress || !sendAmount">
+          Send Tokens
+        </ui5-button>
+      </div>
+    </ui5-dialog>
+
+    <ui5-dialog ref="receiveDialog" header-text="Receive iLe Tokens">
+      <div class="dialog-content">
+        <p class="dialog-description">Share your Stellar address to receive iLe tokens from other users.</p>
+        <div class="dialog-address">
+          <code>{{ stellarKey }}</code>
         </div>
       </div>
-    </section>
+
+      <div slot="footer" class="dialog-footer">
+        <ui5-button design="Emphasized" @click="copyKey">
+          <ui5-icon name="copy" slot="icon"></ui5-icon>
+          {{ copied ? 'Copied!' : 'Copy Address' }}
+        </ui5-button>
+        <ui5-button design="Transparent" @click="closeReceiveDialog">Done</ui5-button>
+      </div>
+    </ui5-dialog>
+
+    <ui5-message-strip v-if="message" :design="messageType" class="wallet__message" @close="message = ''">
+      {{ message }}
+    </ui5-message-strip>
   </div>
 </template>
 
@@ -97,12 +165,41 @@ import { api } from '@/api/client'
 import { useAppStore } from '@/stores/app'
 import type { Transaction, TokenPackage } from '@/api/types'
 
+import '@ui5/webcomponents/dist/Button.js'
+import '@ui5/webcomponents/dist/Card.js'
+import '@ui5/webcomponents/dist/Icon.js'
+import '@ui5/webcomponents/dist/Avatar.js'
+import '@ui5/webcomponents/dist/Dialog.js'
+import '@ui5/webcomponents/dist/Input.js'
+import '@ui5/webcomponents/dist/Label.js'
+import '@ui5/webcomponents/dist/Tag.js'
+import '@ui5/webcomponents/dist/MessageStrip.js'
+import '@ui5/webcomponents-icons/dist/wallet.js'
+import '@ui5/webcomponents-icons/dist/refresh.js'
+import '@ui5/webcomponents-icons/dist/add.js'
+import '@ui5/webcomponents-icons/dist/paper-plane.js'
+import '@ui5/webcomponents-icons/dist/download.js'
+import '@ui5/webcomponents-icons/dist/copy.js'
+import '@ui5/webcomponents-icons/dist/accept.js'
+import '@ui5/webcomponents-icons/dist/money-bills.js'
+import '@ui5/webcomponents-icons/dist/headset.js'
+import '@ui5/webcomponents-icons/dist/business-card.js'
+
 const appStore = useAppStore()
 const balance = ref(0)
 const stellarKey = ref('')
 const packages = ref<TokenPackage[]>([])
 const transactions = ref<Transaction[]>([])
 const purchasing = ref(false)
+const refreshing = ref(false)
+const copied = ref(false)
+const sendAddress = ref('')
+const sendAmount = ref('')
+const message = ref('')
+const messageType = ref<'Information' | 'Positive' | 'Negative'>('Information')
+
+const sendDialog = ref<any>(null)
+const receiveDialog = ref<any>(null)
 
 const usdEquivalent = computed(() => balance.value * 0.001)
 const truncatedKey = computed(() => {
@@ -111,6 +208,7 @@ const truncatedKey = computed(() => {
 })
 
 async function load() {
+  refreshing.value = true
   try {
     const [profile, pkgs, history] = await Promise.all([
       api.getProfile(),
@@ -123,6 +221,8 @@ async function load() {
     transactions.value = history
   } catch (e) {
     console.error('[Wallet]', e)
+  } finally {
+    refreshing.value = false
   }
 }
 
@@ -135,9 +235,10 @@ async function purchasePackage(index: number) {
     } else {
       await load()
       appStore.refreshProfile()
+      showMessage('Tokens purchased successfully!', 'Positive')
     }
   } catch (e: any) {
-    alert(e.message || 'Purchase failed')
+    showMessage(e.message || 'Purchase failed', 'Negative')
   } finally {
     purchasing.value = false
   }
@@ -146,7 +247,74 @@ async function purchasePackage(index: number) {
 function copyKey() {
   if (stellarKey.value) {
     navigator.clipboard.writeText(stellarKey.value)
+    copied.value = true
+    showMessage('Address copied to clipboard!', 'Positive')
+    setTimeout(() => { copied.value = false }, 2000)
   }
+}
+
+function scrollToPackages() {
+  const el = document.getElementById('packages-section')
+  if (el) el.scrollIntoView({ behavior: 'smooth' })
+}
+
+function showSendDialog() {
+  sendDialog.value?.show()
+}
+
+function closeSendDialog() {
+  sendDialog.value?.close()
+  sendAddress.value = ''
+  sendAmount.value = ''
+}
+
+function showReceiveDialog() {
+  receiveDialog.value?.show()
+}
+
+function closeReceiveDialog() {
+  receiveDialog.value?.close()
+}
+
+function handleSend() {
+  showMessage(`Sending ${sendAmount.value} iLe to ${sendAddress.value}`, 'Information')
+  closeSendDialog()
+}
+
+function showMessage(msg: string, type: 'Information' | 'Positive' | 'Negative' = 'Information') {
+  message.value = msg
+  messageType.value = type
+  setTimeout(() => { message.value = '' }, 5000)
+}
+
+function getTxIcon(type: string): string {
+  const icons: Record<string, string> = {
+    PURCHASE: 'money-bills',
+    STREAM: 'headset',
+    SUBSCRIPTION: 'business-card'
+  }
+  return icons[type] || 'document'
+}
+
+function formatTxType(type: string): string {
+  const types: Record<string, string> = {
+    PURCHASE: 'Token Purchase',
+    STREAM: 'Stream',
+    SUBSCRIPTION: 'Subscription'
+  }
+  return types[type] || type
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+  if (days === 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days} days ago`
+  return date.toLocaleDateString()
 }
 
 onMounted(load)
@@ -160,6 +328,9 @@ onMounted(load)
 
   &__header {
     padding: 40px 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   &__title {
@@ -169,35 +340,37 @@ onMounted(load)
     font-family: var(--font-display);
     font-size: 1.8rem;
     font-weight: 900;
+
+    &-icon {
+      font-size: 1.5rem;
+      color: var(--violet-bright);
+    }
+  }
+
+  &__refresh-btn {
+    min-width: 40px;
+    height: 40px;
   }
 
   &__hero {
-    border-radius: var(--radius-lg);
-    padding: 32px;
     margin-bottom: 32px;
-    position: relative;
+    border-radius: var(--radius-lg);
     overflow: hidden;
 
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--gold), var(--amber), var(--violet));
-    }
+    &-content {
+      padding: 32px;
+      position: relative;
+      background: linear-gradient(135deg, rgba(120, 80, 255, 0.05), rgba(0, 229, 255, 0.02));
 
-    &::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 300px;
-      height: 300px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 215, 0, 0.06) 0%, transparent 70%);
-      pointer-events: none;
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--gold), var(--amber), var(--violet));
+      }
     }
   }
 
@@ -214,24 +387,6 @@ onMounted(load)
     align-items: center;
     gap: 12px;
     margin: 12px 0 8px;
-  }
-
-  &__token-symbol {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), var(--amber));
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-  }
-
-  &__token-icon {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: var(--void);
   }
 
   &__amount {
@@ -254,6 +409,16 @@ onMounted(load)
     font-size: 0.82rem;
     color: var(--text-muted);
     font-family: var(--font-mono);
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  &__action-btn {
+    flex: 1;
   }
 
   &__address {
@@ -282,18 +447,8 @@ onMounted(load)
   }
 
   &__copy-btn {
-    padding: 6px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-
-    &:hover {
-      color: var(--violet-bright);
-      border-color: rgba(120, 80, 255, 0.3);
-    }
+    min-width: 32px;
+    height: 32px;
   }
 
   &__section-header {
@@ -320,85 +475,69 @@ onMounted(load)
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 12px;
+    margin-bottom: 32px;
   }
 
   &__package {
-    padding: 24px 20px;
-    border-radius: var(--radius);
-    text-align: center;
     cursor: pointer;
     transition: all var(--transition-smooth);
     position: relative;
     overflow: hidden;
 
-    &:hover:not(:disabled) {
-      border-color: rgba(120, 80, 255, 0.3);
+    &:hover {
       transform: translateY(-4px);
       box-shadow: var(--shadow-glow);
     }
 
     &--popular {
-      border-color: rgba(255, 215, 0, 0.3);
+      border: 2px solid rgba(255, 215, 0, 0.3);
 
-      &:hover:not(:disabled) {
+      &:hover {
         border-color: rgba(255, 215, 0, 0.5);
         box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
       }
     }
 
-    &:disabled { opacity: 0.6; cursor: not-allowed; }
-  }
+    &-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+    }
 
-  &__package-popular {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 4px;
-    background: linear-gradient(90deg, var(--gold), var(--amber));
-    color: var(--void);
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
+    &-content {
+      padding: 24px 20px;
+      text-align: center;
+    }
 
-  &__package-tokens {
-    font-family: var(--font-mono);
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--gold);
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
+    &-tokens {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
 
-  &__package-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), var(--amber));
-    color: var(--void);
-    font-family: var(--font-display);
-    font-size: 0.75rem;
-    font-weight: 900;
-  }
+    &-label {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      margin: 6px 0;
+    }
 
-  &__package-label {
-    font-size: 0.72rem;
-    color: var(--text-secondary);
-    margin: 6px 0;
-  }
+    &-price {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
 
-  &__package-price {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    &-per {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
   }
 
   &__tx-list {
@@ -408,59 +547,149 @@ onMounted(load)
   }
 
   &__tx {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 16px;
-    border-radius: var(--radius);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      box-shadow: var(--shadow-glow);
+    }
+
+    &-content {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+    }
+
+    &-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &--purchase {
+        background: rgba(0, 230, 118, 0.1);
+        color: var(--emerald);
+      }
+      &--stream {
+        background: rgba(120, 80, 255, 0.1);
+        color: var(--violet-bright);
+      }
+      &--subscription {
+        background: rgba(0, 229, 255, 0.1);
+        color: var(--cyan);
+      }
+    }
+
+    &-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    &-type {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    &-date {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    &-amount {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+
+      &--positive { color: var(--emerald); }
+      &--negative { color: var(--text-secondary); }
+    }
   }
 
-  &__tx-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &--purchase {
-      background: rgba(0, 230, 118, 0.1);
-      color: var(--emerald);
-    }
-    &--stream {
-      background: rgba(120, 80, 255, 0.1);
-      color: var(--violet-bright);
-    }
-    &--subscription {
-      background: rgba(0, 229, 255, 0.1);
-      color: var(--cyan);
-    }
-  }
-
-  &__tx-info {
-    flex: 1;
+  &__empty {
+    padding: 48px 24px;
+    text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    gap: 12px;
+
+    &-icon {
+      font-size: 3rem;
+      color: var(--text-muted);
+      opacity: 0.3;
+    }
+
+    p {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    span {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
   }
 
-  &__tx-type {
-    font-size: 0.85rem;
-    font-weight: 600;
+  &__message {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    min-width: 300px;
+    max-width: 500px;
   }
+}
 
-  &__tx-date {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
+.dialog-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 350px;
+}
 
-  &__tx-amount {
+.dialog-input {
+  width: 100%;
+}
+
+.dialog-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.dialog-address {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+
+  code {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
-    font-weight: 600;
-
-    &--positive { color: var(--emerald); }
-    &--negative { color: var(--text-secondary); }
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    word-break: break-all;
+    line-height: 1.6;
   }
+}
+
+.dialog-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 8px;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
 }
 </style>

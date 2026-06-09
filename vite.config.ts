@@ -18,6 +18,9 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: ['@ui5/webcomponents', '@ui5/webcomponents-fiori', '@ui5/webcomponents-icons']
+  },
   css: {
     preprocessorOptions: {
       scss: {

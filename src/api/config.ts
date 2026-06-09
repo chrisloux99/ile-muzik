@@ -1,3 +1,6 @@
+// In production, set VITE_API_URL to your deployed backend URL
+// e.g. https://ile-play-api.onrender.com/api
+// In local dev, the Vite proxy handles /api -> localhost:3001
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 const NAVIDROME_URL = import.meta.env.VITE_NAVIDROME_URL || 'http://localhost:4533'
 const NAVIDROME_USER = import.meta.env.VITE_NAVIDROME_USER || 'ilemusiq'
