@@ -276,9 +276,18 @@ function closeReceiveDialog() {
   receiveDialog.value?.close()
 }
 
-function handleSend() {
-  showMessage(`Sending ${sendAmount.value} iLe to ${sendAddress.value}`, 'Information')
-  closeSendDialog()
+async function handleSend() {
+  if (!sendAddress.value || !sendAmount.value) return
+  
+  try {
+    const result = await api.sendTokens(sendAddress.value, parseFloat(sendAmount.value))
+    showMessage(`Successfully sent ${sendAmount.value} iLe!`, 'Positive')
+    closeSendDialog()
+    await load()
+    appStore.refreshProfile()
+  } catch (e: any) {
+    showMessage(e.message || 'Send failed', 'Negative')
+  }
 }
 
 function showMessage(msg: string, type: 'Information' | 'Positive' | 'Negative' = 'Information') {

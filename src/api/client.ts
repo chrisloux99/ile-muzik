@@ -193,6 +193,13 @@ export class ILeAPI {
     })
   }
 
+  async sendTokens(recipientAddress: string, amount: number): Promise<any> {
+    return this.backendFetch('/payments/send', {
+      method: 'POST',
+      body: JSON.stringify({ recipientAddress, amount }),
+    })
+  }
+
   async getPurchaseHistory(): Promise<Transaction[]> {
     return this.backendFetch('/payments/history')
   }

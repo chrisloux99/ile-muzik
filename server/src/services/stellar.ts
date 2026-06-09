@@ -13,6 +13,18 @@ async function loadSdk() {
   return StellarSdk
 }
 
+function getServer(): string {
+  return config.stellar.isTestnet
+    ? 'https://horizon-testnet.stellar.org'
+    : 'https://horizon.stellar.org'
+}
+
+function getNetworkPassphrase(): string {
+  return config.stellar.isTestnet
+    ? 'Test SDF Network ; September 2015'
+    : 'Public Global Stellar Network ; September 2015'
+}
+
 export class StellarService {
   private issuerKeypair: any = null
   private distributorKeypair: any = null

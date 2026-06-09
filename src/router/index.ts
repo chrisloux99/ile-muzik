@@ -57,6 +57,24 @@ const router = createRouter({
       name: 'payment-cancel',
       component: () => import('@/views/PaymentCancel.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/artist/:id',
+      name: 'artist-detail',
+      component: () => import('@/views/ArtistDetail.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/album/:id',
+      name: 'album-detail',
+      component: () => import('@/views/AlbumDetail.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/views/Profile.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })

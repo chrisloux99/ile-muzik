@@ -294,6 +294,24 @@ export const usePlayerStore = defineStore('player', () => {
   // Restore volume
   audio.setVolume(volume.value)
 
+  // Restore queue on load
+  async function restoreQueue() {
+    try {
+      const playQueue = await api.getPlayQueue()
+      if (playQueue.tracks && playQueue.tracks.length > 0) {
+        queue.value = playQueue.tracks
+        queueIndex.value = playQueue.currentTrack || 0
+        if (track.value) {
+          duration.value = track.value.duration || 0
+          currentTime.value = playQueue.currentTrackPosition || 0
+        }
+        console.log(`[Player] Restored ${playQueue.tracks.length} tracks from queue`)
+      }
+    } catch (e) {
+      console.warn('[Player] Could not restore queue:', e)
+    }
+  }
+
   return {
     queue, queueIndex, duration, currentTime, isPlaying, repeat, shuffleMode,
     volume, replayGainMode, inTransition, wasPaused,
@@ -301,6 +319,6 @@ export const usePlayerStore = defineStore('player', () => {
     setVolume, toggleRepeat, toggleShuffle, toggleReplayGain,
     playNow, shuffleNow, playTrackList, play, pause, stop, playPause,
     next, back, seek, addToQueue, setNextInQueue, removeFromQueue,
-    processQueueEnd, setQueue, setQueueIndex
+    processQueueEnd, setQueue, setQueueIndex, restoreQueue
   }
 })

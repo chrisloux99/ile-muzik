@@ -14,14 +14,23 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '@/stores/app'
+import { usePlayerStore } from '@/stores/player'
 import CosmosBackground from '@/components/CosmosBackground.vue'
 import OrbNav from '@/components/OrbNav.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
 
 const { isLoggedIn, navOpen } = storeToRefs(useAppStore())
+const player = usePlayerStore()
+
+onMounted(() => {
+  if (isLoggedIn.value) {
+    player.restoreQueue()
+  }
+})
 </script>
 
 <style lang="scss">

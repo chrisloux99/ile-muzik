@@ -156,6 +156,45 @@ export class PaymentService {
       take: 50,
     })
   }
+
+  async sendTokens(userId: string, recipientAddress: string, amount: number) {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) throw new Error('User not found')
+    if (!user.stellarPublicKey) throw new Error('User has no wallet')
+
+    const balance = parseFloat(user.tokenBalance || '0')
+    if (balance < amount) throw new Error('Insufficient balance')
+
+    let txHash: string | null = null
+    try {
+      txHash = await stellarService.sendTokens(recipientAddress, amount.toFixed(7))
+    } catch (err: any) {
+      throw new Error(`Token transfer failed: ${err.message}`)
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { tokenBalance: (balance - amount).toString() }
+    })
+
+    await prisma.transaction.create({
+      data: {
+        userId,
+        type: 'SEND',
+        amount: 0,
+        tokenAmount: amount,
+        currency: 'ILE',
+        status: 'COMPLETED',
+        txHash,
+      }
+    })
+
+    return {
+      txHash,
+      amount,
+      message: `Successfully sent ${amount} iLe to ${recipientAddress}`
+    }
+  }
 }
 
 export const paymentService = new PaymentService()

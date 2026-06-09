@@ -18,6 +18,19 @@ router.post('/purchase', authMiddleware, async (req, res, next) => {
   }
 })
 
+router.post('/send', authMiddleware, async (req, res, next) => {
+  try {
+    const { recipientAddress, amount } = req.body
+    if (!recipientAddress || !amount) {
+      return res.status(400).json({ error: 'Recipient address and amount are required' })
+    }
+    const result = await paymentService.sendTokens(req.user!.userId, recipientAddress, parseFloat(amount))
+    res.json(result)
+  } catch (err) {
+    next(err)
+  }
+})
+
 router.post('/webhook', async (req, res, next) => {
   try {
     const signature = req.headers['stripe-signature'] as string
