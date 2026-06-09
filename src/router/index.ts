@@ -75,6 +75,24 @@ const router = createRouter({
       name: 'profile',
       component: () => import('@/views/Profile.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/staking',
+      name: 'staking',
+      component: () => import('@/views/Staking.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/governance',
+      name: 'governance',
+      component: () => import('@/views/Governance.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/dex',
+      name: 'dex',
+      component: () => import('@/views/DEX.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })

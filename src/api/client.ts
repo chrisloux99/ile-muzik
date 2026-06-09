@@ -1,5 +1,5 @@
 import type { Track, Album, Artist, Genre, Playlist, SearchResult, PlayQueue } from './types'
-import type { User, AuthResponse, TokenPackage, SubscriptionStatus, StreamRecord, CanPlayResult, Transaction } from './types'
+import type { User, AuthResponse, TokenPackage, SubscriptionStatus, StreamRecord, CanPlayResult, Transaction, Stake, StakingStats, Burn, Proposal, Orderbook, MarketPrice, Trade, AssetInfo } from './types'
 import { getApiBase, getNavidromeUrl, getNavidromeUser, getNavidromePass } from './config'
 
 function toQueryString(params: Record<string, any>): string {
@@ -234,6 +234,94 @@ export class ILeAPI {
 
   async getStreamStats(): Promise<any> {
     return this.backendFetch('/streams/stats')
+  }
+
+  // ---- Burns ----
+  async burnTokens(amount: number, reason?: string): Promise<any> {
+    return this.backendFetch('/burns', {
+      method: 'POST',
+      body: JSON.stringify({ amount, reason }),
+    })
+  }
+
+  async getBurnHistory(): Promise<Burn[]> {
+    return this.backendFetch('/burns/history')
+  }
+
+  async getTotalBurned(): Promise<{ totalBurned: number }> {
+    return this.backendFetch('/burns/total')
+  }
+
+  // ---- Staking ----
+  async stakeTokens(amount: number): Promise<any> {
+    return this.backendFetch('/staking/stake', {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    })
+  }
+
+  async unstakeTokens(stakeId: string): Promise<any> {
+    return this.backendFetch('/staking/unstake', {
+      method: 'POST',
+      body: JSON.stringify({ stakeId }),
+    })
+  }
+
+  async getActiveStakes(): Promise<Stake[]> {
+    return this.backendFetch('/staking/active')
+  }
+
+  async getStakingHistory(): Promise<Stake[]> {
+    return this.backendFetch('/staking/history')
+  }
+
+  async getStakingStats(): Promise<StakingStats> {
+    return this.backendFetch('/staking/stats')
+  }
+
+  // ---- Governance ----
+  async createProposal(title: string, description: string, durationDays?: number): Promise<any> {
+    return this.backendFetch('/governance/proposals', {
+      method: 'POST',
+      body: JSON.stringify({ title, description, durationDays }),
+    })
+  }
+
+  async getProposals(status?: string): Promise<Proposal[]> {
+    const query = status ? `?status=${status}` : ''
+    return this.backendFetch(`/governance/proposals${query}`)
+  }
+
+  async getProposal(id: string): Promise<Proposal> {
+    return this.backendFetch(`/governance/proposals/${id}`)
+  }
+
+  async vote(proposalId: string, support: boolean): Promise<any> {
+    return this.backendFetch('/governance/vote', {
+      method: 'POST',
+      body: JSON.stringify({ proposalId, support }),
+    })
+  }
+
+  async getMyVotes(): Promise<Transaction[]> {
+    return this.backendFetch('/governance/my-votes')
+  }
+
+  // ---- DEX ----
+  async getOrderbook(selling = 'ILE', buying = 'XLM'): Promise<Orderbook> {
+    return this.backendFetch(`/dex/orderbook?selling=${selling}&buying=${buying}`)
+  }
+
+  async getMarketPrice(base = 'ILE', quote = 'XLM'): Promise<MarketPrice> {
+    return this.backendFetch(`/dex/price?base=${base}&quote=${quote}`)
+  }
+
+  async getTradeHistory(selling = 'ILE', buying = 'XLM'): Promise<Trade[]> {
+    return this.backendFetch(`/dex/trades?selling=${selling}&buying=${buying}`)
+  }
+
+  async getAssetInfo(): Promise<AssetInfo> {
+    return this.backendFetch('/dex/asset')
   }
 
   // ---- Subsonic (music data) ----

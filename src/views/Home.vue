@@ -20,7 +20,7 @@
     </section>
 
     <section class="stats-grid">
-      <ui5-card class="stat-card" @click="$router.push('/wallet')" interactive>
+      <div class="stat-card lightning-border glass" @click="$router.push('/wallet')">
         <div class="stat-card__content">
           <ui5-icon name="wallet" class="stat-card__icon stat-card__icon--gold"></ui5-icon>
           <div class="stat-card__info">
@@ -29,20 +29,20 @@
           </div>
           <ui5-icon name="slim-arrow-right" class="stat-card__arrow"></ui5-icon>
         </div>
-      </ui5-card>
+      </div>
 
-      <ui5-card class="stat-card" @click="$router.push('/subscriptions')" interactive>
+      <div class="stat-card lightning-border glass" @click="$router.push('/subscriptions')">
         <div class="stat-card__content">
-          <ui5-icon name="headset" class="stat-card__icon stat-card__icon--violet"></ui5-icon>
+          <ui5-icon name="headset" class="stat-card__icon stat-card__icon--orange"></ui5-icon>
           <div class="stat-card__info">
             <span class="stat-card__value">{{ streamsThisMonth }}/{{ streamLimit === -1 ? '∞' : streamLimit }}</span>
             <span class="stat-card__label">Streams This Month</span>
           </div>
           <ui5-icon name="slim-arrow-right" class="stat-card__arrow"></ui5-icon>
         </div>
-      </ui5-card>
+      </div>
 
-      <ui5-card class="stat-card" @click="$router.push('/subscriptions')" interactive>
+      <div class="stat-card lightning-border glass" @click="$router.push('/subscriptions')">
         <div class="stat-card__content">
           <ui5-icon name="business-card" class="stat-card__icon stat-card__icon--cyan"></ui5-icon>
           <div class="stat-card__info">
@@ -51,7 +51,7 @@
           </div>
           <ui5-icon name="slim-arrow-right" class="stat-card__arrow"></ui5-icon>
         </div>
-      </ui5-card>
+      </div>
     </section>
 
     <section class="quick-actions">
@@ -331,8 +331,8 @@ onMounted(load)
       color: var(--gold);
     }
 
-    &--violet {
-      color: var(--violet-bright);
+    &--orange {
+      color: var(--orange);
     }
 
     &--cyan {
@@ -366,7 +366,7 @@ onMounted(load)
 
   &:hover &__arrow {
     transform: translateX(4px);
-    color: var(--violet-bright);
+    color: var(--orange);
   }
 }
 
@@ -396,7 +396,7 @@ onMounted(load)
 
   &:hover {
     color: var(--text-primary);
-    background: rgba(120, 80, 255, 0.08);
+    background: rgba(255, 107, 43, 0.08);
   }
 
   &:active {

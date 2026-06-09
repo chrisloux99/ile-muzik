@@ -5,17 +5,21 @@
         <ui5-icon name="wallet" class="wallet__title-icon"></ui5-icon>
         Wallet
       </h1>
-      <ui5-button design="Transparent" @click="load" :disabled="refreshing" class="wallet__refresh-btn">
-        <ui5-icon name="refresh" :class="{ 'spinning': refreshing }"></ui5-icon>
-      </ui5-button>
+      <div class="wallet__header-actions">
+        <ui5-button design="Transparent" @click="load" :disabled="refreshing" class="wallet__refresh-btn">
+          <ui5-icon name="refresh" :class="{ 'spinning': refreshing }"></ui5-icon>
+        </ui5-button>
+      </div>
     </div>
 
-    <ui5-card class="wallet__hero">
-      <div class="wallet__hero-content">
+    <div class="wallet__hero wave-border">
+      <div class="wallet__hero-content glass">
         <div class="wallet__balance-section">
           <span class="wallet__balance-label">Your Balance</span>
           <div class="wallet__balance">
-            <ui5-avatar initials="i" shape="Circle" size="S" color-scheme="Accent6"></ui5-avatar>
+            <div class="wallet__token-symbol orange-glow">
+              <span class="wallet__token-icon">i</span>
+            </div>
             <span class="wallet__amount">{{ balance.toFixed(4) }}</span>
             <span class="wallet__currency">iLe</span>
           </div>
@@ -23,7 +27,7 @@
         </div>
 
         <div class="wallet__actions">
-          <ui5-button design="Emphasized" @click="scrollToPackages" class="wallet__action-btn">
+          <ui5-button design="Emphasized" @click="scrollToPackages" class="wallet__action-btn wallet__action-btn--buy">
             <ui5-icon name="add" slot="icon"></ui5-icon>
             Buy Tokens
           </ui5-button>
@@ -35,6 +39,10 @@
             <ui5-icon name="download" slot="icon"></ui5-icon>
             Receive
           </ui5-button>
+          <ui5-button design="Transparent" @click="showSwapDialog" class="wallet__action-btn">
+            <ui5-icon name="switch-views" slot="icon"></ui5-icon>
+            Swap
+          </ui5-button>
         </div>
 
         <div class="wallet__address" v-if="stellarKey">
@@ -45,7 +53,31 @@
           </ui5-button>
         </div>
       </div>
-    </ui5-card>
+    </div>
+
+    <section class="wallet__stats">
+      <div class="wallet__stat-card lightning-border glass">
+        <ui5-icon name="trend-up" class="wallet__stat-icon wallet__stat-icon--green"></ui5-icon>
+        <div class="wallet__stat-info">
+          <span class="wallet__stat-value">{{ totalEarned.toFixed(2) }}</span>
+          <span class="wallet__stat-label">Total Earned</span>
+        </div>
+      </div>
+      <div class="wallet__stat-card lightning-border glass">
+        <ui5-icon name="trend-down" class="wallet__stat-icon wallet__stat-icon--red"></ui5-icon>
+        <div class="wallet__stat-info">
+          <span class="wallet__stat-value">{{ totalSpent.toFixed(2) }}</span>
+          <span class="wallet__stat-label">Total Spent</span>
+        </div>
+      </div>
+      <div class="wallet__stat-card lightning-border glass">
+        <ui5-icon name="history" class="wallet__stat-icon wallet__stat-icon--orange"></ui5-icon>
+        <div class="wallet__stat-info">
+          <span class="wallet__stat-value">{{ transactions.length }}</span>
+          <span class="wallet__stat-label">Transactions</span>
+        </div>
+      </div>
+    </section>
 
     <section class="wallet__packages" id="packages-section">
       <div class="wallet__section-header">
@@ -54,26 +86,26 @@
       </div>
 
       <div class="wallet__package-grid">
-        <ui5-card
+        <div
           v-for="(pkg, i) in packages"
           :key="i"
-          class="wallet__package"
+          class="wallet__package wave-border"
           :class="{ 'wallet__package--popular': i === 2 }"
           @click="purchasePackage(i)"
-          interactive
-          :disabled="purchasing"
         >
-          <ui5-tag v-if="i === 2" class="wallet__package-badge" design="Positive">Best Value</ui5-tag>
-          <div class="wallet__package-content">
-            <div class="wallet__package-tokens">
-              <ui5-avatar initials="i" shape="Circle" size="XS" color-scheme="Accent6"></ui5-avatar>
-              {{ pkg.tokens.toLocaleString() }}
+          <div class="wallet__package-inner glass">
+            <ui5-tag v-if="i === 2" class="wallet__package-badge" design="Positive">Best Value</ui5-tag>
+            <div class="wallet__package-content">
+              <div class="wallet__package-tokens">
+                <span class="wallet__package-icon orange-glow">i</span>
+                {{ pkg.tokens.toLocaleString() }}
+              </div>
+              <div class="wallet__package-label">{{ pkg.label }}</div>
+              <div class="wallet__package-price">${{ pkg.priceUSD.toFixed(2) }}</div>
+              <div class="wallet__package-per">{{ (pkg.priceUSD / pkg.tokens).toFixed(4) }} / token</div>
             </div>
-            <div class="wallet__package-label">{{ pkg.label }}</div>
-            <div class="wallet__package-price">${{ pkg.priceUSD.toFixed(2) }}</div>
-            <div class="wallet__package-per">{{ (pkg.priceUSD / pkg.tokens).toFixed(4) }} / token</div>
           </div>
-        </ui5-card>
+        </div>
       </div>
     </section>
 
@@ -84,7 +116,7 @@
       </div>
 
       <div v-if="transactions.length" class="wallet__tx-list">
-        <ui5-card v-for="tx in transactions" :key="tx.id" class="wallet__tx">
+        <div v-for="tx in transactions" :key="tx.id" class="wallet__tx lightning-border glass">
           <div class="wallet__tx-content">
             <div class="wallet__tx-icon" :class="'wallet__tx-icon--' + tx.type.toLowerCase()">
               <ui5-icon :name="getTxIcon(tx.type)"></ui5-icon>
@@ -97,59 +129,60 @@
               {{ tx.type === 'PURCHASE' ? '+' : '-' }}{{ parseFloat(tx.tokenAmount).toFixed(2) }} iLe
             </div>
           </div>
-        </ui5-card>
+        </div>
       </div>
 
-      <ui5-card v-else class="wallet__empty">
+      <div v-else class="wallet__empty lightning-border glass">
         <ui5-icon name="wallet" class="wallet__empty-icon"></ui5-icon>
         <p>No transactions yet</p>
         <span>Your purchase and stream history will appear here</span>
-      </ui5-card>
+      </div>
     </section>
 
     <ui5-dialog ref="sendDialog" header-text="Send iLe Tokens">
       <div class="dialog-content">
-        <ui5-input
-          v-model="sendAddress"
-          placeholder="Enter Stellar address"
-          class="dialog-input"
-        >
+        <ui5-input v-model="sendAddress" placeholder="Enter Stellar address" class="dialog-input">
           <ui5-label slot="label">Recipient Address</ui5-label>
         </ui5-input>
-
-        <ui5-input
-          v-model="sendAmount"
-          type="Number"
-          placeholder="0.00"
-          class="dialog-input"
-        >
+        <ui5-input v-model="sendAmount" type="Number" placeholder="0.00" class="dialog-input">
           <ui5-label slot="label">Amount (iLe)</ui5-label>
           <span slot="valueStateMessage">Balance: {{ balance.toFixed(4) }} iLe</span>
         </ui5-input>
       </div>
-
       <div slot="footer" class="dialog-footer">
         <ui5-button design="Transparent" @click="closeSendDialog">Cancel</ui5-button>
-        <ui5-button design="Emphasized" @click="handleSend" :disabled="!sendAddress || !sendAmount">
-          Send Tokens
-        </ui5-button>
+        <ui5-button design="Emphasized" @click="handleSend" :disabled="!sendAddress || !sendAmount">Send Tokens</ui5-button>
       </div>
     </ui5-dialog>
 
     <ui5-dialog ref="receiveDialog" header-text="Receive iLe Tokens">
       <div class="dialog-content">
-        <p class="dialog-description">Share your Stellar address to receive iLe tokens from other users.</p>
-        <div class="dialog-address">
-          <code>{{ stellarKey }}</code>
-        </div>
+        <p class="dialog-description">Share your Stellar address to receive iLe tokens.</p>
+        <div class="dialog-address"><code>{{ stellarKey }}</code></div>
       </div>
-
       <div slot="footer" class="dialog-footer">
         <ui5-button design="Emphasized" @click="copyKey">
           <ui5-icon name="copy" slot="icon"></ui5-icon>
           {{ copied ? 'Copied!' : 'Copy Address' }}
         </ui5-button>
         <ui5-button design="Transparent" @click="closeReceiveDialog">Done</ui5-button>
+      </div>
+    </ui5-dialog>
+
+    <ui5-dialog ref="swapDialog" header-text="Swap Tokens">
+      <div class="dialog-content">
+        <p class="dialog-description">Swap iLe tokens with other currencies.</p>
+        <ui5-select class="dialog-input">
+          <ui5-option selected>iLe → XLM</ui5-option>
+          <ui5-option>iLe → USD</ui5-option>
+        </ui5-select>
+        <ui5-input type="Number" placeholder="Amount" class="dialog-input">
+          <ui5-label slot="label">Amount</ui5-label>
+        </ui5-input>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <ui5-button design="Transparent" @click="closeSwapDialog">Cancel</ui5-button>
+        <ui5-button design="Emphasized" disabled>Coming Soon</ui5-button>
       </div>
     </ui5-dialog>
 
@@ -172,6 +205,8 @@ import '@ui5/webcomponents/dist/Avatar.js'
 import '@ui5/webcomponents/dist/Dialog.js'
 import '@ui5/webcomponents/dist/Input.js'
 import '@ui5/webcomponents/dist/Label.js'
+import '@ui5/webcomponents/dist/Select.js'
+import '@ui5/webcomponents/dist/Option.js'
 import '@ui5/webcomponents/dist/Tag.js'
 import '@ui5/webcomponents/dist/MessageStrip.js'
 import '@ui5/webcomponents-icons/dist/wallet.js'
@@ -184,6 +219,10 @@ import '@ui5/webcomponents-icons/dist/accept.js'
 import '@ui5/webcomponents-icons/dist/money-bills.js'
 import '@ui5/webcomponents-icons/dist/headset.js'
 import '@ui5/webcomponents-icons/dist/business-card.js'
+import '@ui5/webcomponents-icons/dist/trend-up.js'
+import '@ui5/webcomponents-icons/dist/trend-down.js'
+import '@ui5/webcomponents-icons/dist/history.js'
+import '@ui5/webcomponents-icons/dist/switch-views.js'
 
 const appStore = useAppStore()
 const balance = ref(0)
@@ -200,11 +239,24 @@ const messageType = ref<'Information' | 'Positive' | 'Negative'>('Information')
 
 const sendDialog = ref<any>(null)
 const receiveDialog = ref<any>(null)
+const swapDialog = ref<any>(null)
 
 const usdEquivalent = computed(() => balance.value * 0.001)
 const truncatedKey = computed(() => {
   if (!stellarKey.value) return ''
   return stellarKey.value.slice(0, 8) + '...' + stellarKey.value.slice(-6)
+})
+
+const totalEarned = computed(() => {
+  return transactions.value
+    .filter(tx => tx.type === 'PURCHASE')
+    .reduce((sum, tx) => sum + parseFloat(tx.tokenAmount), 0)
+})
+
+const totalSpent = computed(() => {
+  return transactions.value
+    .filter(tx => tx.type !== 'PURCHASE')
+    .reduce((sum, tx) => sum + parseFloat(tx.tokenAmount), 0)
 })
 
 async function load() {
@@ -258,29 +310,17 @@ function scrollToPackages() {
   if (el) el.scrollIntoView({ behavior: 'smooth' })
 }
 
-function showSendDialog() {
-  sendDialog.value?.show()
-}
-
-function closeSendDialog() {
-  sendDialog.value?.close()
-  sendAddress.value = ''
-  sendAmount.value = ''
-}
-
-function showReceiveDialog() {
-  receiveDialog.value?.show()
-}
-
-function closeReceiveDialog() {
-  receiveDialog.value?.close()
-}
+function showSendDialog() { sendDialog.value?.show() }
+function closeSendDialog() { sendDialog.value?.close(); sendAddress.value = ''; sendAmount.value = '' }
+function showReceiveDialog() { receiveDialog.value?.show() }
+function closeReceiveDialog() { receiveDialog.value?.close() }
+function showSwapDialog() { swapDialog.value?.show() }
+function closeSwapDialog() { swapDialog.value?.close() }
 
 async function handleSend() {
   if (!sendAddress.value || !sendAmount.value) return
-  
   try {
-    const result = await api.sendTokens(sendAddress.value, parseFloat(sendAmount.value))
+    await api.sendTokens(sendAddress.value, parseFloat(sendAmount.value))
     showMessage(`Successfully sent ${sendAmount.value} iLe!`, 'Positive')
     closeSendDialog()
     await load()
@@ -297,20 +337,12 @@ function showMessage(msg: string, type: 'Information' | 'Positive' | 'Negative' 
 }
 
 function getTxIcon(type: string): string {
-  const icons: Record<string, string> = {
-    PURCHASE: 'money-bills',
-    STREAM: 'headset',
-    SUBSCRIPTION: 'business-card'
-  }
+  const icons: Record<string, string> = { PURCHASE: 'money-bills', STREAM: 'headset', SUBSCRIPTION: 'business-card' }
   return icons[type] || 'document'
 }
 
 function formatTxType(type: string): string {
-  const types: Record<string, string> = {
-    PURCHASE: 'Token Purchase',
-    STREAM: 'Stream',
-    SUBSCRIPTION: 'Subscription'
-  }
+  const types: Record<string, string> = { PURCHASE: 'Token Purchase', STREAM: 'Stream', SUBSCRIPTION: 'Subscription', SEND: 'Sent' }
   return types[type] || type
 }
 
@@ -319,7 +351,6 @@ function formatDate(dateStr: string): string {
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-
   if (days === 0) return 'Today'
   if (days === 1) return 'Yesterday'
   if (days < 7) return `${days} days ago`
@@ -352,24 +383,21 @@ onMounted(load)
 
     &-icon {
       font-size: 1.5rem;
-      color: var(--violet-bright);
+      color: var(--orange);
     }
   }
 
-  &__refresh-btn {
-    min-width: 40px;
-    height: 40px;
-  }
+  &__refresh-btn { min-width: 40px; height: 40px; }
 
   &__hero {
-    margin-bottom: 32px;
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    margin-bottom: 24px;
 
     &-content {
       padding: 32px;
+      border-radius: var(--radius-lg);
       position: relative;
-      background: linear-gradient(135deg, rgba(120, 80, 255, 0.05), rgba(0, 229, 255, 0.02));
+      overflow: hidden;
 
       &::before {
         content: '';
@@ -378,7 +406,7 @@ onMounted(load)
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, var(--gold), var(--amber), var(--violet));
+        background: linear-gradient(90deg, var(--orange), var(--amber), var(--gold));
       }
     }
   }
@@ -398,11 +426,28 @@ onMounted(load)
     margin: 12px 0 8px;
   }
 
+  &__token-symbol {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), var(--amber));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__token-icon {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--void);
+  }
+
   &__amount {
     font-family: var(--font-mono);
     font-size: 2.4rem;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--gold), var(--amber-bright));
+    background: linear-gradient(135deg, var(--orange), var(--amber-bright));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -424,10 +469,16 @@ onMounted(load)
     display: flex;
     gap: 10px;
     margin-top: 24px;
+    flex-wrap: wrap;
   }
 
   &__action-btn {
     flex: 1;
+    min-width: 100px;
+
+    &--buy {
+      background: linear-gradient(135deg, var(--orange), var(--orange-dim)) !important;
+    }
   }
 
   &__address {
@@ -455,9 +506,46 @@ onMounted(load)
     }
   }
 
-  &__copy-btn {
-    min-width: 32px;
-    height: 32px;
+  &__copy-btn { min-width: 32px; height: 32px; }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  &__stat-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    border-radius: var(--radius);
+  }
+
+  &__stat-icon {
+    font-size: 1.5rem;
+
+    &--green { color: var(--emerald); }
+    &--red { color: var(--magenta); }
+    &--orange { color: var(--orange); }
+  }
+
+  &__stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__stat-value {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  &__stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
   }
 
   &__section-header {
@@ -477,7 +565,7 @@ onMounted(load)
   &__section-line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, rgba(120, 80, 255, 0.2), transparent);
+    background: linear-gradient(90deg, rgba(255, 107, 43, 0.3), transparent);
   }
 
   &__package-grid {
@@ -488,23 +576,21 @@ onMounted(load)
   }
 
   &__package {
+    border-radius: var(--radius);
     cursor: pointer;
     transition: all var(--transition-smooth);
-    position: relative;
-    overflow: hidden;
 
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-glow);
-    }
+    &:hover { transform: translateY(-4px); }
 
     &--popular {
-      border: 2px solid rgba(255, 215, 0, 0.3);
+      .wallet__package-inner { border-color: rgba(255, 215, 0, 0.3); }
+    }
 
-      &:hover {
-        border-color: rgba(255, 215, 0, 0.5);
-        box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
-      }
+    &-inner {
+      padding: 24px 20px;
+      border-radius: var(--radius);
+      text-align: center;
+      position: relative;
     }
 
     &-badge {
@@ -513,20 +599,29 @@ onMounted(load)
       right: 8px;
     }
 
-    &-content {
-      padding: 24px 20px;
-      text-align: center;
-    }
-
     &-tokens {
       font-family: var(--font-mono);
       font-size: 1.4rem;
       font-weight: 700;
-      color: var(--gold);
+      color: var(--orange);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+    }
+
+    &-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--orange), var(--amber));
+      color: var(--void);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     &-label {
@@ -556,11 +651,10 @@ onMounted(load)
   }
 
   &__tx {
+    border-radius: var(--radius);
     transition: all var(--transition-fast);
 
-    &:hover {
-      box-shadow: var(--shadow-glow);
-    }
+    &:hover { transform: translateX(4px); }
 
     &-content {
       display: flex;
@@ -577,18 +671,10 @@ onMounted(load)
       align-items: center;
       justify-content: center;
 
-      &--purchase {
-        background: rgba(0, 230, 118, 0.1);
-        color: var(--emerald);
-      }
-      &--stream {
-        background: rgba(120, 80, 255, 0.1);
-        color: var(--violet-bright);
-      }
-      &--subscription {
-        background: rgba(0, 229, 255, 0.1);
-        color: var(--cyan);
-      }
+      &--purchase { background: rgba(0, 230, 118, 0.1); color: var(--emerald); }
+      &--stream { background: rgba(255, 107, 43, 0.1); color: var(--orange); }
+      &--subscription { background: rgba(0, 229, 255, 0.1); color: var(--cyan); }
+      &--send { background: rgba(255, 64, 129, 0.1); color: var(--magenta); }
     }
 
     &-info {
@@ -598,15 +684,8 @@ onMounted(load)
       gap: 2px;
     }
 
-    &-type {
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    &-date {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
+    &-type { font-size: 0.85rem; font-weight: 600; }
+    &-date { font-size: 0.72rem; color: var(--text-muted); }
 
     &-amount {
       font-family: var(--font-mono);
@@ -620,28 +699,17 @@ onMounted(load)
 
   &__empty {
     padding: 48px 24px;
+    border-radius: var(--radius);
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
 
-    &-icon {
-      font-size: 3rem;
-      color: var(--text-muted);
-      opacity: 0.3;
-    }
+    &-icon { font-size: 3rem; color: var(--text-muted); opacity: 0.3; }
 
-    p {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    span {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-    }
+    p { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+    span { font-size: 0.82rem; color: var(--text-muted); }
   }
 
   &__message {
@@ -663,9 +731,7 @@ onMounted(load)
   min-width: 350px;
 }
 
-.dialog-input {
-  width: 100%;
-}
+.dialog-input { width: 100%; }
 
 .dialog-description {
   font-size: 0.9rem;
@@ -698,7 +764,5 @@ onMounted(load)
   padding: 8px;
 }
 
-.spinning {
-  animation: spin 1s linear infinite;
-}
+.spinning { animation: spin 1s linear infinite; }
 </style>

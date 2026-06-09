@@ -15,6 +15,9 @@
   --cyan-dim: #00b8d4;
   --amber: #ffab00;
   --amber-bright: #ffd740;
+  --orange: #ff6b2b;
+  --orange-bright: #ff8f5e;
+  --orange-dim: #e55a1b;
   --magenta: #ff4081;
   --magenta-dim: #f50057;
   --emerald: #00e676;
@@ -23,17 +26,17 @@
   --text-primary: #eeeef6;
   --text-secondary: rgba(238, 238, 246, 0.55);
   --text-muted: rgba(238, 238, 246, 0.25);
-  --text-glow: rgba(120, 80, 255, 0.9);
+  --text-glow: rgba(255, 107, 43, 0.9);
 
-  --accent: var(--violet);
-  --accent-hover: var(--violet-bright);
+  --accent: var(--orange);
+  --accent-hover: var(--orange-bright);
 
   --radius: 16px;
   --radius-sm: 10px;
   --radius-lg: 24px;
   --radius-pill: 100px;
 
-  --shadow-glow: 0 0 40px rgba(120, 80, 255, 0.15);
+  --shadow-glow: 0 0 40px rgba(255, 107, 43, 0.15);
   --shadow-deep: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-float: 0 20px 60px rgba(0, 0, 0, 0.4);
 
@@ -204,4 +207,112 @@ ui5-textarea {
 @keyframes ripple {
   0% { transform: scale(0); opacity: 0.6; }
   100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes waveBorder {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes lightningMove {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(200%) rotate(45deg); }
+}
+
+@keyframes borderRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes orangePulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 107, 43, 0.3), 0 0 15px rgba(255, 107, 43, 0.1); }
+  50% { box-shadow: 0 0 10px rgba(255, 107, 43, 0.5), 0 0 30px rgba(255, 107, 43, 0.2); }
+}
+
+.wave-border {
+  position: relative;
+  border: none !important;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--orange),
+      var(--amber),
+      var(--orange-bright),
+      var(--gold),
+      var(--orange)
+    );
+    background-size: 300% 300%;
+    animation: waveBorder 4s ease infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.lightning-border {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 107, 43, 0.2);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 30px;
+    height: 200%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 107, 43, 0.6),
+      rgba(255, 215, 0, 0.4),
+      transparent
+    );
+    animation: lightningMove 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+.orange-glow {
+  animation: orangePulse 3s ease-in-out infinite;
+}
+
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+}
+
+.glow-orange {
+  box-shadow: 0 0 20px rgba(255, 107, 43, 0.2), 0 0 60px rgba(255, 107, 43, 0.05);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--orange-bright), var(--amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-warm {
+  background: linear-gradient(135deg, var(--orange), var(--magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

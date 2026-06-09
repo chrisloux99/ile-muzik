@@ -59,7 +59,83 @@ export interface Transaction {
   currency: string
   txHash: string | null
   status: string
+  metadata?: string
   createdAt: string
+}
+
+export interface Stake {
+  id: string
+  userId: string
+  amount: number
+  startDate: string
+  endDate: string | null
+  status: string
+  rewardRate: number
+  txHash: string | null
+}
+
+export interface StakingStats {
+  activeStakes: number
+  totalStaked: number
+  avgRewardRate: number
+  estimatedAnnualRewards: number
+}
+
+export interface Burn {
+  id: string
+  userId: string
+  amount: number
+  reason: string | null
+  txHash: string | null
+  createdAt: string
+}
+
+export interface Proposal {
+  id: string
+  title: string
+  description: string
+  status: string
+  votesFor: number
+  votesAgainst: number
+  endDate: string
+  totalVoters?: number
+  createdAt: string
+}
+
+export interface OrderbookEntry {
+  price: string
+  amount: string
+}
+
+export interface Orderbook {
+  bids: OrderbookEntry[]
+  asks: OrderbookEntry[]
+  base: string
+  counter: string
+}
+
+export interface MarketPrice {
+  base: string
+  quote: string
+  bestBid: number
+  bestAsk: number
+  midPrice: number
+  spread: number
+}
+
+export interface Trade {
+  id: string
+  price: number
+  amount: string
+  timestamp: string
+}
+
+export interface AssetInfo {
+  code: string
+  issuer: string
+  found: boolean
+  numAccounts?: number
+  amount?: string
 }
 
 export interface Track {
